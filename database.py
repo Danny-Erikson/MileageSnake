@@ -79,7 +79,7 @@ class DB:
             INSERT INTO Cars (VINNumber, LicensePlate, Year, Make, Model, Trim)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (vin, plate, year, make, model, trim),
+            (vin, plate, year, make, model, trim)
         )
     
     def get_all_cars(self):

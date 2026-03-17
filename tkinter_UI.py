@@ -16,6 +16,7 @@ class Service_UI:
     #* Builders
 
     def _show_main_screen(self):
+        self._clear_frame()
         self.master.columnconfigure(0, weight=1)
         self.master.columnconfigure(1, weight=1)
 
@@ -28,7 +29,7 @@ class Service_UI:
         service_button = ttk.Button(self.master, text="Service Entering", command="")
         service_button.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
 
-        man_cars_button = ttk.Button(self.master, text="Manage cars", command="")
+        man_cars_button = ttk.Button(self.master, text="Manage cars", command=self._show_car_manager)
         man_cars_button.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
 
         man_services_button = ttk.Button(self.master, text="Manage recurring services")
@@ -37,7 +38,71 @@ class Service_UI:
         gen_report = ttk.Button(self.master, text="Generate Service Report")
         gen_report.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
+    def _show_car_manager(self):
+        #TODO: Add new Car Button fictionally
+        #TODO: Edit Button
+        # Clear Frame
+        self._clear_frame()
+        self.master.columnconfigure(0, weight=1)
+        self.master.columnconfigure(1, weight=1)
+        self.master.columnconfigure(2, weight=1)
+
+        # Database call
+        cars = self.db.get_all_cars()
+
+        # Set Up top of the cars Table
+        title_label = tk.Label(self.master, text="Cars", font=("Arial", 16))
+        title_label.grid(row=0, column=0, columnspan=3, pady=25)
+        car_label = tk.Label(self.master, text="Car")
+        car_label.grid(row=1, column=0, sticky="ew")
+        license_label = tk.Label(self.master, text="License plate")
+        license_label.grid(row=1, column=1, sticky="ew")
+        vin_label = tk.Label(self.master, text="VIN Number")
+        vin_label.grid(row=1, column=2, sticky="ew")
+        
+        # This for loop is to build a table based on the number of entry in the cars table
+        # The .bind on each element to allow the text to be copyable 
+        row_count = 2
+        for car in cars:
+            car_name = tk.Label(self.master, text=f"{car["Year"]} {car["Make"]} {car["Model"]} {car["Trim"] or ""}")
+            car_name.bind("<Button-1>", self.copy_text)
+            car_name.grid(row=row_count, column=0, sticky="ew")
+            car_vin = tk.Label(self.master, text=car["VINNumber"])
+            car_vin.bind("<Button-1>", self.copy_text)
+            car_vin.grid(row=row_count, column=1, sticky="ew")
+            car_license = tk.Label(self.master, text=car["LicensePlate"])
+            car_license.bind("<Button-1>", self.copy_text)
+            car_license.grid(row=row_count, column=2, sticky="ew")
+            row_count += 1
+        
+        # Below the table elements
+        copy_inst = tk.Label(self.master, text="Click on car values to copy to clipboard")
+        copy_inst.grid(row=row_count + 1, column=0, columnspan=3, pady=10)
+        add_new = tk.Button(self.master, text="Add New Car")
+        add_new.grid(row=row_count + 2, column=0, columnspan=3, pady=10)
+        go_back = tk.Button(self.master, text="Go Back", command=self._show_main_screen)
+        go_back.grid(row=row_count + 3, column=0, columnspan=3, pady=10)
+
+
     #* Helper functions
 
     def _on_close(self):
         self.master.destroy()
+    
+    def _clear_frame(self):
+        #clears elements
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        # Reset column/row weight
+        for i in range(10):  # pick a safe max
+            self.master.columnconfigure(i, weight=0)
+            self.master.rowconfigure(i, weight=0)
+
+    def copy_text(self, event):
+        self.master.clipboard_clear()
+        self.master.clipboard_append(event.widget["text"])
+
+        msg = ttk.Label(self.master, text="Copied!")
+        msg.place(x=event.x_root - self.master.winfo_rootx(),
+                y=event.y_root - self.master.winfo_rooty())
+        self.master.after(800, msg.destroy)
