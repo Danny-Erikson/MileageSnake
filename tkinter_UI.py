@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 class Service_UI:
     def __init__(self, master, db):
@@ -43,7 +43,6 @@ class Service_UI:
     #* Car Manager
 
     def _show_car_manager(self):
-        #TODO: Add new Car Button fictionally
         #TODO: Edit Button fictionally
         #TODO: Remove button fictionally
         # Clear Frame
@@ -89,10 +88,102 @@ class Service_UI:
         # Below the table elements
         copy_inst = tk.Label(self.master, text="Click on car values to copy to clipboard")
         copy_inst.grid(row=row_count + 1, column=0, columnspan=5, pady=10)
-        add_new = tk.Button(self.master, text="Add New Car")
+        add_new = tk.Button(self.master, text="Add New Car", command=self._show_car_form)
         add_new.grid(row=row_count + 2, column=0, columnspan=5, pady=10)
         go_back = tk.Button(self.master, text="Go Back", command=self._show_main_screen)
         go_back.grid(row=row_count + 3, column=0, columnspan=5, pady=10)
+
+    def _show_car_form(self):
+        self._clear_frame()
+        self.master.columnconfigure(0, weight=1)
+        self.master.columnconfigure(1, weight=1)
+
+        self.year_var = tk.StringVar()
+        self.make_var = tk.StringVar()
+        self.model_var = tk.StringVar()
+        self.trim_var = tk.StringVar()
+        self.license_var = tk.StringVar()
+        self.vin_var = tk.StringVar()
+
+        #FIXME: Use defeat values of empty stings to reuse function for edit/add new 
+        #? This Title needs to be changed based on edit or add new car
+        title_label = ttk. Label(self.master, text="Add a New Car", font=("Arial", 16))
+        title_label.grid(row=0, column=0, columnspan=2)
+        
+        year_label = ttk.Label(self.master, text="Year:")
+        year_label.grid(row=1, column=0, sticky="e", padx=10, pady=10)
+        year_entry = ttk.Entry(self.master, textvariable=self.year_var)
+        year_entry.grid(row=1, column=1, sticky="w", padx=10, pady=10)
+
+        make_label = ttk.Label(self.master, text="Make:")
+        make_label.grid(row=2, column=0, sticky="e", padx=10, pady=10)
+        make_entry = ttk.Entry(self.master, textvariable=self.make_var)
+        make_entry.grid(row=2, column=1, sticky="w", padx=10, pady=10)
+
+        model_label = ttk.Label(self.master, text="Model:")
+        model_label.grid(row=3, column=0, sticky="e", padx=10, pady=10)
+        model_entry = ttk.Entry(self.master, textvariable=self.model_var)
+        model_entry.grid(row=3, column=1, sticky="w", padx=10, pady=10)
+
+        trim_label = ttk.Label(self.master, text="Trim:")
+        trim_label.grid(row=4, column=0, sticky="e", padx=10, pady=10)
+        trim_entry = ttk.Entry(self.master, textvariable=self.trim_var)
+        trim_entry.grid(row=4, column=1, sticky="w", padx=10, pady=10)
+
+        license_label = ttk.Label(self.master, text="License Plate:")
+        license_label.grid(row=5, column=0, sticky="e", padx=10, pady=10)
+        license_entry = ttk.Entry(self.master, textvariable=self.license_var)
+        license_entry.grid(row=5, column=1, sticky="w", padx=10, pady=10)
+
+        vin_label = ttk.Label(self.master, text="VIN Number:")
+        vin_label.grid(row=6, column=0, sticky="e", padx=10, pady=10)
+        vin_entry = ttk.Entry(self.master, textvariable=self.vin_var)
+        vin_entry.grid(row=6, column=1, sticky="w", padx=10, pady=10)
+
+        submit_button = ttk.Button(self.master, text="Submit", command=self._add_new_car)
+        submit_button.grid(row= 7, columnspan=2, padx=10, pady=10)
+
+        back_button = ttk.Button(self.master, text="Go Back", command=self._show_car_manager)
+        back_button.grid(row= 8, columnspan=2, padx=10, pady=10)
+    
+    #* Car Manager Helper
+
+    def _validate_inputs_car(self):
+        if self.year_var.get() == "":
+            messagebox.showerror("Input Error", "Year can not be blank")
+            return False
+        
+        if not self.year_var.get().isnumeric():
+            messagebox.showerror("Input Error", "Year must be a number")
+            return False
+        
+        if self.make_var.get() == "":
+            messagebox.showerror("Input Error", "Make can not be blank")
+            return False
+        
+        if self.model_var.get() == "":
+            messagebox.showerror("Input Error", "Model can not be blank")
+            return False
+        
+        if len(self.vin_var.get()) != 17 and len(self.vin_var.get()) != 0:
+            messagebox.showerror("Input Error", "VIN must be 17 characters long")
+            return False
+        
+        return True
+
+    def _add_new_car(self):
+        if not self._validate_inputs_car():
+            return
+        
+        self.db.add_car(self.vin_var.get().upper() or None,
+                        self.license_var.get().upper() or None,
+                        int(self.year_var.get()),
+                        self.make_var.get(),
+                        self.model_var.get(),
+                        self.trim_var.get() or None,
+                        )
+
+        self._show_car_manager()
 
 
     #* Helper functions
