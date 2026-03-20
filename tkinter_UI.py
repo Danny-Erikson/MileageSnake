@@ -4,6 +4,7 @@ from tkinter import ttk, messagebox
 
 class Service_UI:
     #TODO: We Have a lot of padx pady for looks of the ui, break this out into a import
+    #TODO: Clean up DB calls, cars table is a self
     def __init__(self, master, db):
         self.master = master
         master.title("Mileage Snake")
@@ -24,29 +25,31 @@ class Service_UI:
         """
         Used to build the UI elements for the car selector, mileage, and date entry
         """
-        
         self.car_var = tk.StringVar()
         self.mileage_var = tk.IntVar()
         self.date_var = tk.StringVar()
-        
-        cars = self.db.get_all_models()
-        
+
+        self.cars = self.db.get_all_cars()
+
         car_label = ttk.Label(self.master, text="Car: ")
-        car_label.grid(row= 1, column= 0, sticky="e", padx= 10, pady = 10)
-        car_combo = ttk.Combobox(self.master, textvariable= self.car_var, state="readonly")
-        car_combo["values"] = [f"{c["Year"]} {c["Make"]} {c["Model"]}" for c in cars]
-        self.car_var.set(car_combo["values"][0])
-        car_combo.grid(row= 1, column= 1, sticky="w", padx= 10, pady = 10)
-        
-        mileage_label = ttk.Label(self.master, text= 'Mileage:')
-        mileage_label.grid(row= 2, column= 0, sticky="e", padx= 10, pady = 10)
-        mileage_entry = ttk.Entry(self.master, textvariable= self.mileage_var, validate="key", validatecommand=(self.vcmd, "%P"))
-        mileage_entry.grid(row= 2, column= 1, sticky="w", padx= 10, pady = 10)
-        
-        mileage_date_label = ttk.Label(self.master, text= 'Date of reading:')
-        mileage_date_label.grid(row=3, column=0, sticky="e", padx= 10, pady = 10)
-        mileage_date = ttk.Entry(self.master, textvariable= self.date_var)
-        mileage_date.grid(row=3, column=1, sticky="w", padx= 10, pady = 10)
+        car_label.grid(row=1, column=0, sticky="e", padx=10, pady=10)
+
+        self.car_combo = ttk.Combobox(self.master, textvariable=self.car_var, state="readonly")
+        self.car_combo["values"] = [f"{c['Year']} {c['Make']} {c['Model']}" for c in self.cars]
+        self.car_var.set(self.car_combo["values"][0])
+        self.car_combo.grid(row=1, column=1, sticky="w", padx=10, pady=10)
+
+        mileage_label = ttk.Label(self.master, text="Mileage:")
+        mileage_label.grid(row=2, column=0, sticky="e", padx=10, pady=10)
+
+        mileage_entry = ttk.Entry(self.master, textvariable=self.mileage_var, validate="key", validatecommand=(self.vcmd, "%P"))
+        mileage_entry.grid(row=2, column=1, sticky="w", padx=10, pady=10)
+
+        mileage_date_label = ttk.Label(self.master, text="Date of reading:")
+        mileage_date_label.grid(row=3, column=0, sticky="e", padx=10, pady=10)
+
+        mileage_date = ttk.Entry(self.master, textvariable=self.date_var)
+        mileage_date.grid(row=3, column=1, sticky="w", padx=10, pady=10)
 
     #* Main Screen
 
@@ -276,17 +279,25 @@ class Service_UI:
         self._clear_frame()
         self.master.columnconfigure(0, weight=1)
         self.master.columnconfigure(1, weight=1)
-        
+
         title_label = tk.Label(self.master, text="Enter Mileage", font=("Arial", 16))
         title_label.grid(row=0, column=0, columnspan=2, pady=25)
-        
+
         self._create_shared_widgets()
-        
-        mile_submit = ttk.Button(self.master, text= 'Enter Mileage') 
-        mile_submit.grid(row= 4, columnspan=2, padx= 10, pady = 10)
-        
+
+        mile_submit = ttk.Button(self.master, text="Enter Mileage", command=self._add_mileage)
+        mile_submit.grid(row=4, columnspan=2, padx=10, pady=10)
+
         back_button = ttk.Button(self.master, text="Go Back", command=self._show_main_screen)
-        back_button.grid(row= 5, columnspan=2, padx= 10, pady = 10)
+        back_button.grid(row=5, columnspan=2, padx=10, pady=10)
+
+    #* Mileage Helper
+    def _add_mileage(self):
+        car_id = self.cars[self.car_combo.current()]["CarID"]
+        mileage = self.mileage_var.get()
+        date = self.date_var.get()
+
+        print(car_id, mileage, date)
 
     #* Helper functions
 
