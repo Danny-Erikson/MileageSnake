@@ -47,7 +47,7 @@ class DB:
     def __init__(self, path):
         self.conn = sqlite3.connect(path)
         self.conn.row_factory = sqlite3.Row
-
+    
         self.conn.executescript(SCHEMA)
     
     def close(self):
@@ -97,3 +97,19 @@ class DB:
             """,
             (vin, plate, year, make, model, trim, car_id)
         )
+    
+    def remove_car(self, carID):
+        self.execute("DELETE FROM Cars WHERE CarID = ?", (carID,))
+    
+    #* Mileage
+    def add_mileage(self, carID, reading, date):
+        self.execute(
+            """
+            INSERT INTO Mileage (CarID, OdometerReading, Date)
+            VALUES (?, ?, ?)
+            """,
+            (carID, reading, date)
+        )
+    
+    def get_mileage_by_ID(self, carID):
+        return self.fetchone("SELECT * FROM Mileage WHERE CarID = ?", (carID,))

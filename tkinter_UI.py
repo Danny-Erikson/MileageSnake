@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+
 class Service_UI:
     def __init__(self, master, db):
         self.master = master
@@ -12,7 +13,8 @@ class Service_UI:
 
         #Runtime
         self._show_main_screen()
-    
+
+
     #* Builders
 
     #* Main Screen
@@ -43,7 +45,6 @@ class Service_UI:
     #* Car Manager
 
     def _show_car_manager(self):
-        #TODO: Remove button fictionally
         #* Initialize Frame & Call DB
         self._clear_frame()
         self.master.columnconfigure(0, weight=1)
@@ -81,7 +82,7 @@ class Service_UI:
             car_license = tk.Label(self.master, text=car["VINNumber"])
             car_license.bind("<Button-1>", self.copy_text)
             car_license.grid(row=row_count, column=3, sticky="ew")
-            remove_car = tk.Button(self.master, text="Remove Car")
+            remove_car = tk.Button(self.master, text="Remove Car", command=lambda carID=car["CarID"]: self._remove_car(carID=carID))
             remove_car.grid(row=row_count, column=4, sticky="ew")
             row_count += 1
         
@@ -204,7 +205,7 @@ class Service_UI:
                         self.model_var.get(),
                         self.trim_var.get() or None,
                         )
-
+        
         self._show_car_manager()
 
     def _edit_car(self, carID):
@@ -222,12 +223,32 @@ class Service_UI:
         
         self._show_car_manager()
 
+    def _remove_car(self, carID):
+        car = self.db.get_car_by_ID(carID)
+        
+        confirmed = messagebox.askyesno("Delete Car", f"Are you sure you want to delete {car["Year"]} {car["Make"]} {car["Model"]}")
+        if confirmed:
+            mile_count = self.db.get_mileage_by_ID(carID)
+            if mile_count and len(mile_count) > 3:
+                messagebox.showinfo("Double Check", "Please go to the terminal to confirm the removal")
+                double = input(f'CAUTION: You are about to delete a car with {len(mile_count)} entries, type "Yes" if you meant to do this: \n')
+                if double == "Yes":
+                    safe_to_delete = True
+                else:
+                    print("Operation aborted, if you believe this is a mistake, make sure you type Y-e-s")
+            else:
+                safe_to_delete = True
+            
+            if safe_to_delete:
+                self.db.remove_car(carID)
+                self._show_car_manager()
+
 
     #* Helper functions
 
     def _on_close(self):
         self.master.destroy()
-    
+
     def _clear_frame(self):
         #clears elements
         for widget in self.master.winfo_children():
@@ -240,7 +261,7 @@ class Service_UI:
     def copy_text(self, event):
         self.master.clipboard_clear()
         self.master.clipboard_append(event.widget["text"])
-
+        
         msg = ttk.Label(self.master, text="Copied!")
         msg.place(x=event.x_root - self.master.winfo_rootx(),
                 y=event.y_root - self.master.winfo_rooty())
