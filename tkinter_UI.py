@@ -3,19 +3,50 @@ from tkinter import ttk, messagebox
 
 
 class Service_UI:
+    #TODO: We Have a lot of padx pady for looks of the ui, break this out into a import
     def __init__(self, master, db):
         self.master = master
         master.title("Mileage Snake")
         master.geometry("600x500")
         master.protocol("WM_DELETE_WINDOW", self._on_close)
-
+        
+        self.vcmd = master.register(self._only_numbers)
+        
         self.db = db
-
+        
         #Runtime
         self._show_main_screen()
 
 
     #* Builders
+
+    def _create_shared_widgets(self):
+        """
+        Used to build the UI elements for the car selector, mileage, and date entry
+        """
+        
+        self.car_var = tk.StringVar()
+        self.mileage_var = tk.IntVar()
+        self.date_var = tk.StringVar()
+        
+        cars = self.db.get_all_models()
+        
+        car_label = ttk.Label(self.master, text="Car: ")
+        car_label.grid(row= 1, column= 0, sticky="e", padx= 10, pady = 10)
+        car_combo = ttk.Combobox(self.master, textvariable= self.car_var, state="readonly")
+        car_combo["values"] = [f"{c["Year"]} {c["Make"]} {c["Model"]}" for c in cars]
+        self.car_var.set(car_combo["values"][0])
+        car_combo.grid(row= 1, column= 1, sticky="w", padx= 10, pady = 10)
+        
+        mileage_label = ttk.Label(self.master, text= 'Mileage:')
+        mileage_label.grid(row= 2, column= 0, sticky="e", padx= 10, pady = 10)
+        mileage_entry = ttk.Entry(self.master, textvariable= self.mileage_var, validate="key", validatecommand=(self.vcmd, "%P"))
+        mileage_entry.grid(row= 2, column= 1, sticky="w", padx= 10, pady = 10)
+        
+        mileage_date_label = ttk.Label(self.master, text= 'Date of reading:')
+        mileage_date_label.grid(row=3, column=0, sticky="e", padx= 10, pady = 10)
+        mileage_date = ttk.Entry(self.master, textvariable= self.date_var)
+        mileage_date.grid(row=3, column=1, sticky="w", padx= 10, pady = 10)
 
     #* Main Screen
 
@@ -23,22 +54,22 @@ class Service_UI:
         self._clear_frame()
         self.master.columnconfigure(0, weight=1)
         self.master.columnconfigure(1, weight=1)
-
+        
         title_label = tk.Label(self.master, text="Service Logger", font=("Arial", 16))
         title_label.grid(row=0, column=0, columnspan=2, pady=25)
-
-        mileage_button = ttk.Button(self.master, text="Enter Mileage", command="")
+        
+        mileage_button = ttk.Button(self.master, text="Enter Mileage", command=self._show_mileage_screen)
         mileage_button.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
-
+        
         service_button = ttk.Button(self.master, text="Service Entering", command="")
         service_button.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
-
+        
         man_cars_button = ttk.Button(self.master, text="Manage cars", command=self._show_car_manager)
         man_cars_button.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
-
+        
         man_services_button = ttk.Button(self.master, text="Manage recurring services")
         man_services_button.grid(row=2, column=1, padx=10, pady=10, sticky="ew")
-
+        
         gen_report = ttk.Button(self.master, text="Generate Service Report")
         gen_report.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
@@ -138,7 +169,7 @@ class Service_UI:
         #* Building of Shared Elements 
         year_label = ttk.Label(self.master, text="Year:")
         year_label.grid(row=1, column=0, sticky="e", padx=10, pady=10)
-        year_entry = ttk.Entry(self.master, textvariable=self.year_var)
+        year_entry = ttk.Entry(self.master, textvariable=self.year_var, validate="key", validatecommand=(self.vcmd, "%P"))
         year_entry.grid(row=1, column=1, sticky="w", padx=10, pady=10)
         
         make_label = ttk.Label(self.master, text="Make:")
@@ -174,10 +205,6 @@ class Service_UI:
     def _validate_inputs_car(self):
         if self.year_var.get() == "":
             messagebox.showerror("Input Error", "Year can not be blank")
-            return False
-        
-        if not self.year_var.get().isnumeric():
-            messagebox.showerror("Input Error", "Year must be a number")
             return False
         
         if self.make_var.get() == "":
@@ -243,6 +270,23 @@ class Service_UI:
                 self.db.remove_car(carID)
                 self._show_car_manager()
 
+    #* Mileage
+    def _show_mileage_screen(self):
+        #* Initialize Frame & Call DB
+        self._clear_frame()
+        self.master.columnconfigure(0, weight=1)
+        self.master.columnconfigure(1, weight=1)
+        
+        title_label = tk.Label(self.master, text="Enter Mileage", font=("Arial", 16))
+        title_label.grid(row=0, column=0, columnspan=2, pady=25)
+        
+        self._create_shared_widgets()
+        
+        mile_submit = ttk.Button(self.master, text= 'Enter Mileage') 
+        mile_submit.grid(row= 4, columnspan=2, padx= 10, pady = 10)
+        
+        back_button = ttk.Button(self.master, text="Go Back", command=self._show_main_screen)
+        back_button.grid(row= 5, columnspan=2, padx= 10, pady = 10)
 
     #* Helper functions
 
@@ -266,3 +310,6 @@ class Service_UI:
         msg.place(x=event.x_root - self.master.winfo_rootx(),
                 y=event.y_root - self.master.winfo_rooty())
         self.master.after(800, msg.destroy)
+
+    def _only_numbers(self, new_value):
+        return new_value.isdigit() or new_value == ""

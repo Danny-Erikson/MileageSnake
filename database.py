@@ -85,6 +85,9 @@ class DB:
     def get_all_cars(self):
         return self.fetchall("SELECT * FROM Cars")
     
+    def get_all_models(self):
+        return self.fetchall("SELECT Year, Make, Model FROM Cars")
+    
     def get_car_by_ID(self, carID):
         return self.fetchone("SELECT * FROM Cars WHERE CarID = ?", (carID,))
     
