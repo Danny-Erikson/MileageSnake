@@ -4,7 +4,7 @@ import sqlite3
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS Cars (
-    CarId INTEGER PRIMARY KEY AUTOINCREMENT,
+    CarID INTEGER PRIMARY KEY AUTOINCREMENT,
     VINNumber TEXT,
     LicensePlate TEXT,
     Year INT NOT NULL,
@@ -84,3 +84,16 @@ class DB:
     
     def get_all_cars(self):
         return self.fetchall("SELECT * FROM Cars")
+    
+    def get_car_by_ID(self, carID):
+        return self.fetchone("SELECT * FROM Cars WHERE CarID = ?", (carID,))
+    
+    def update_car(self, vin, plate, year, make, model, trim, car_id):
+        self.execute(
+            """
+            UPDATE Cars
+            SET VINNumber = ?, LicensePlate = ?, Year = ?, Make = ?, Model = ?, Trim = ?
+            WHERE CarID = ?
+            """,
+            (vin, plate, year, make, model, trim, car_id)
+        )
