@@ -57,7 +57,7 @@ class DB:
     def execute(self, sql, params = ()):
         with self.conn:
             cur = self.conn.execute(sql, params)
-        return cur
+            return cur.lastrowid
     
     #? We have these fetch functions as it makes it easier to call results
     #? The return is closer to a object notation
@@ -103,13 +103,14 @@ class DB:
     
     #* Mileage
     def add_mileage(self, carID, reading, date):
-        self.execute(
+        mileageID = self.execute(
             """
             INSERT INTO Mileage (CarID, OdometerReading, Date)
             VALUES (?, ?, ?)
             """,
             (carID, reading, date)
         )
+        return mileageID
     
     def get_mileage_by_ID(self, carID):
         return self.fetchone("SELECT * FROM Mileage WHERE CarID = ?", (carID,))

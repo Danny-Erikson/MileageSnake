@@ -5,6 +5,7 @@ from tkinter import ttk, messagebox
 class Service_UI:
     #TODO: We Have a lot of padx pady for looks of the ui, break this out into a import
     #TODO: Clean up DB calls, cars table is a self
+    #TODO: Think of control flows for when we get a new mileage entry/ service entry
     def __init__(self, master, db):
         self.master = master
         master.title("Mileage Snake")
@@ -25,6 +26,8 @@ class Service_UI:
         """
         Used to build the UI elements for the car selector, mileage, and date entry
         """
+        #FIXME: also add set default to current date for date entry
+        #TODO: Add a MPG Area, This make the _create_shared useable
         self.car_var = tk.StringVar()
         self.mileage_var = tk.IntVar()
         self.date_var = tk.StringVar()
@@ -293,11 +296,12 @@ class Service_UI:
 
     #* Mileage Helper
     def _add_mileage(self):
-        car_id = self.cars[self.car_combo.current()]["CarID"]
-        mileage = self.mileage_var.get()
-        date = self.date_var.get()
+        #FIXME: how are we going to handle dates
+        # We are going to use datetime for the date math
+        self.db.add_mileage(self.cars[self.car_combo.current()]["CarID"],
+                            self.mileage_var.get(),
+                            self.date_var.get())
 
-        print(car_id, mileage, date)
 
     #* Helper functions
 
@@ -314,13 +318,14 @@ class Service_UI:
             self.master.rowconfigure(i, weight=0)
 
     def copy_text(self, event):
-        self.master.clipboard_clear()
-        self.master.clipboard_append(event.widget["text"])
-        
-        msg = ttk.Label(self.master, text="Copied!")
-        msg.place(x=event.x_root - self.master.winfo_rootx(),
-                y=event.y_root - self.master.winfo_rooty())
-        self.master.after(800, msg.destroy)
+        if event.widget["text"] != "":
+            self.master.clipboard_clear()
+            self.master.clipboard_append(event.widget["text"])
+            
+            msg = ttk.Label(self.master, text="Copied!")
+            msg.place(x=event.x_root - self.master.winfo_rootx(),
+                    y=event.y_root - self.master.winfo_rooty())
+            self.master.after(800, msg.destroy)
 
     def _only_numbers(self, new_value):
         return new_value.isdigit() or new_value == ""
