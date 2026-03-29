@@ -13,7 +13,8 @@ class Service_UI:
         master.geometry("600x500")
         master.protocol("WM_DELETE_WINDOW", self._on_close)
         
-        self.vcmd = master.register(self._only_numbers)
+        self.int_vcmd = master.register(self._only_numbers)
+        self.float_vcmd = master.register(self._only_floats)
         
         self.db = db
         
@@ -64,3 +65,12 @@ class Service_UI:
 
     def _only_numbers(self, new_value):
         return new_value.isdigit() or new_value == ""
+
+    def _only_floats(self, new_value):
+        if new_value == "":
+            return True
+        try:
+            float(new_value)
+            return True
+        except ValueError:
+            return False

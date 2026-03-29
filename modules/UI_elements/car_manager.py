@@ -100,7 +100,7 @@ def show_car_form(ui, editing=False, carID=None):
     #* Building of Shared Elements 
     year_label = ttk.Label(ui.master, text="Year:")
     year_label.grid(row=1, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
-    year_entry = ttk.Entry(ui.master, textvariable=ui.year_var, validate="key", validatecommand=(ui.vcmd, "%P"))
+    year_entry = ttk.Entry(ui.master, textvariable=ui.year_var, validate="key", validatecommand=(ui.int_vcmd, "%P"))
     year_entry.grid(row=1, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
     make_label = ttk.Label(ui.master, text="Make:")
