@@ -6,6 +6,8 @@ from ui_padding import *
 
 #* Car Manager
 
+#NOTE: self.cars is called at launch in tkinker_UI and we update it as needed. This is to reduce db calls
+
 def show_car_manager(ui):
     #* Initialize Frame & Call DB
     ui._clear_frame()
@@ -14,8 +16,6 @@ def show_car_manager(ui):
     ui.master.columnconfigure(2, weight=1)
     ui.master.columnconfigure(3, weight=1)
     ui.master.columnconfigure(4, weight=1)
-    
-    cars = ui.db.get_all_cars()
     
     #* Build top of table
     title_label = tk.Label(ui.master, text="Cars", font=("Arial", 16))
@@ -32,7 +32,7 @@ def show_car_manager(ui):
     # This for loop is to build a table based on the number of entry in the cars table
     # The .bind on each element to allow the text to be copyable 
     row_count = 2
-    for car in cars:
+    for car in ui.cars:
         edit_button = tk.Button(ui.master, text="🖉", command=lambda carID=car["CarID"]: show_car_form(ui, editing=True, carID=carID))
         edit_button.grid(row=row_count, column=0, sticky="ew")
         car_name = tk.Label(ui.master, text=f"{car["Year"]} {car["Make"]} {car["Model"]} {car["Trim"] or ""}")
@@ -134,7 +134,7 @@ def show_car_form(ui, editing=False, carID=None):
 
 #* Car Manager Helper
 
-def validate_inputs_car(ui):
+def validate_inputs(ui):
     if ui.year_var.get() == "":
         messagebox.showerror("Input Error", "Year can not be blank")
         return False
@@ -154,7 +154,7 @@ def validate_inputs_car(ui):
     return True
 
 def add_new_car(ui):
-    if not validate_inputs_car(ui):
+    if not validate_inputs(ui):
         return
     
     ui.db.add_car(ui.vin_var.get().upper() or None,
@@ -165,10 +165,11 @@ def add_new_car(ui):
                     ui.trim_var.get() or None,
                     )
     
+    ui.cars = ui.db.get_all_cars()
     show_car_manager(ui)
 
 def edit_car(ui, carID):
-    if not validate_inputs_car(ui):
+    if not validate_inputs(ui):
         return
     
     ui.db.update_car(ui.vin_var.get().upper() or None,
@@ -180,6 +181,7 @@ def edit_car(ui, carID):
                     carID
                     )
     
+    ui.cars = ui.db.get_all_cars()
     show_car_manager(ui)
 
 def remove_car(ui, carID):
@@ -200,6 +202,7 @@ def remove_car(ui, carID):
         
         if safe_to_delete:
             ui.db.remove_car(carID)
+            ui.cars = ui.db.get_all_cars()
             show_car_manager(ui)
 
 def copy_text(event):

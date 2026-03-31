@@ -18,6 +18,9 @@ class Service_UI:
         
         self.db = db
         
+        #Call to Info used on multiple screens
+        self.cars = self.db.get_all_cars()
+        
         #Runtime
         self._show_main_screen()
 
