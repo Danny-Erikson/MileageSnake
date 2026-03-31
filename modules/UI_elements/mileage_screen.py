@@ -16,6 +16,8 @@ def show_mileage_screen(ui):
     ui.car_var = tk.StringVar()
     ui.mileage_var = tk.IntVar()
     ui.date_var = tk.StringVar()
+    ui.mpg_var = tk.BooleanVar()
+    ui.full_up_var = tk.BooleanVar(value=True)
     
     title_label = tk.Label(ui.master, text="Enter Mileage", font=("Arial", 16))
     title_label.grid(row=0, column=0, columnspan=2, pady=TITLE_Y)
@@ -44,37 +46,62 @@ def show_mileage_screen(ui):
     ui.date_var.set(value=dt.date.today())
     mileage_date.grid(row=3, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
-    #* Mileage Area
-    #FIXME: The Checkbox doesn't disable the fields
-    #FIXME: Change the way we handle the mileage submit with the mileage entry
-    gas_check = tk.Checkbutton(ui.master, text="MPG Entry")
-    gas_check.grid(row=4, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
+        #* Mileage Area
+    mpg_check = tk.Checkbutton(ui.master,text="MPG Entry",variable=ui.mpg_var,command=lambda: mpg_toggle(ui))
+    mpg_check.grid(row=4, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
     
-    total_label = tk.Label(ui.master, text="Total Paid:")
-    total_label.grid(row=5, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
+    ui.total_paid_var = tk.StringVar()
+    ui.gallons_bought_var = tk.StringVar()
     
-    total_entry = ttk.Entry(ui.master, textvariable="", validate="key", validatecommand=(ui.float_vcmd, "%P"))
-    total_entry.grid(row=5, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
+    ui.total_label = tk.Label(ui.master, text="Total Paid:")
+    ui.total_label.grid(row=5, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
     
-    gallons_label = tk.Label(ui.master, text="Gallons Bought:")
-    gallons_label.grid(row=6, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
+    ui.total_entry = ttk.Entry(ui.master, textvariable=ui.total_paid_var, validate="key", validatecommand=(ui.float_vcmd, "%P"), state="disabled")
+    ui.total_entry.grid(row=5, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
-    gallons_entry = ttk.Entry(ui.master, textvariable="", validate="key", validatecommand=(ui.float_vcmd, "%P"))
-    gallons_entry.grid(row=6, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
+    ui.gallons_label = tk.Label(ui.master, text="Gallons Bought:")
+    ui.gallons_label.grid(row=6, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
+    
+    ui.gallons_entry = ttk.Entry(ui.master, textvariable=ui.gallons_bought_var, validate="key", validatecommand=(ui.float_vcmd, "%P"), state="disabled")
+    ui.gallons_entry.grid(row=6, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
+    
+    ui.full_up_check = tk.Checkbutton(ui.master, text="Filled to Full", variable=ui.full_up_var, state="disabled")
+    ui.full_up_check.grid(row=7, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
     
     #* Submit Area
-    mile_submit = ttk.Button(ui.master, text="Enter Mileage", command=add_mileage)
-    mile_submit.grid(row=7, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
+    mile_submit = ttk.Button(ui.master, text="Enter Mileage", command=lambda: add_mileage(ui))
+    mile_submit.grid(row=8, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
     
     back_button = ttk.Button(ui.master, text="Go Back", command=ui._show_main_screen)
-    back_button.grid(row=8, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
+    back_button.grid(row=9, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
 
 #* Mileage Helper
+#TODO: We need to add validation for the input fields
 def add_mileage(ui):
-    ui.db.add_mileage(ui.cars[ui.car_combo.current()]["CarID"],
+    mileageID = ui.db.add_mileage(ui.cars[ui.car_combo.current()]["CarID"],
                         ui.mileage_var.get(),
                         ui.date_var.get())
+    message = "Your mileage has been entered"
+
+    if ui.mpg_var.get() == True:
+        ui.db.add_fuel(mileageID,
+                    ui.gallons_bought_var.get(),
+                    ui.total_paid_var.get(),
+                    1 if ui.full_up_var.get() else 0)
+                    # Thank you SQLite for making me use this absolutely beautiful line 
+                    # Instead of just having a Boolean Type
+        message = "Your mileage and fuel has been entered"
     
-    messagebox.showinfo("Mileage Entered", "Your Mileage has been entered")
+    messagebox.showinfo("Mileage Entered", f"{message}")
     
     ui._show_main_screen()
+
+def mpg_toggle(ui):
+    if ui.mpg_var.get():
+        ui.total_entry.config(state="normal")
+        ui.gallons_entry.config(state="normal")
+        ui.full_up_check.config(state="normal")
+    else:
+        ui.total_entry.config(state="disabled")
+        ui.gallons_entry.config(state="disabled")
+        ui.full_up_check.config(state="disabled")

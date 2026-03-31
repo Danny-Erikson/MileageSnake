@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS FuelLog (
     FuelLogId INTEGER PRIMARY KEY AUTOINCREMENT,
     MileageId INTEGER NOT NULL UNIQUE,
     GallonsBought REAL NOT NULL,
-    TotalCost REAL,
+    TotalCost REAL NOT NULL,
     FullFillUp INTEGER NOT NULL DEFAULT 1,
     FOREIGN KEY (MileageId) REFERENCES Mileage(MileageId)
 );
@@ -123,3 +123,12 @@ class DB:
     
     def get_mileage_by_ID(self, carID):
         return self.fetchone("SELECT * FROM Mileage WHERE CarID = ?", (carID,))
+    
+    def add_fuel(self, mileageID, gallonsBrought, totalCost, fullFillUp):
+        self.execute(
+            """
+            INSERT INTO FuelLog (MileageID, GallonsBought, TotalCost, FullFillUp)
+            VALUES (?, ?, ?, ?)
+            """,
+            (mileageID, gallonsBrought, totalCost, fullFillUp)
+        )
