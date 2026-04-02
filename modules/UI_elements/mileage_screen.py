@@ -4,6 +4,7 @@ import datetime as dt
 
 from ui_padding import *
 
+#NOTE: self.cars is called at launch in tkinker_UI
 
 #* Mileage
 
@@ -14,15 +15,15 @@ def show_mileage_screen(ui):
     ui.master.columnconfigure(1, weight=1)
     
     ui.car_var = tk.StringVar()
-    ui.mileage_var = tk.IntVar()
+    ui.mileage_var = tk.StringVar()
     ui.date_var = tk.StringVar()
     ui.mpg_var = tk.BooleanVar()
+    ui.total_paid_var = tk.StringVar()
+    ui.gallons_bought_var = tk.StringVar()
     ui.full_up_var = tk.BooleanVar(value=True)
     
     title_label = tk.Label(ui.master, text="Enter Mileage", font=("Arial", 16))
     title_label.grid(row=0, column=0, columnspan=2, pady=TITLE_Y)
-    
-    ui.cars = ui.db.get_all_cars()
     
     #* Mileage Area
     car_label = ttk.Label(ui.master, text="Car: ")
@@ -46,12 +47,9 @@ def show_mileage_screen(ui):
     ui.date_var.set(value=dt.date.today())
     mileage_date.grid(row=3, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
-        #* Mileage Area
+    #* Fuel Area
     mpg_check = tk.Checkbutton(ui.master,text="MPG Entry",variable=ui.mpg_var,command=lambda: mpg_toggle(ui))
     mpg_check.grid(row=4, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
-    
-    ui.total_paid_var = tk.StringVar()
-    ui.gallons_bought_var = tk.StringVar()
     
     ui.total_label = tk.Label(ui.master, text="Total Paid:")
     ui.total_label.grid(row=5, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
@@ -76,8 +74,10 @@ def show_mileage_screen(ui):
     back_button.grid(row=9, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
 
 #* Mileage Helper
-#TODO: We need to add validation for the input fields
 def add_mileage(ui):
+    if not validate_inputs(ui):
+        return
+    
     mileageID = ui.db.add_mileage(ui.cars[ui.car_combo.current()]["CarID"],
                         ui.mileage_var.get(),
                         ui.date_var.get())
@@ -88,7 +88,7 @@ def add_mileage(ui):
                     ui.gallons_bought_var.get(),
                     ui.total_paid_var.get(),
                     1 if ui.full_up_var.get() else 0)
-                    # Thank you SQLite for making me use this absolutely beautiful line 
+                    # Thank you SQLite for making me use this absolutely ""beautiful"" line 
                     # Instead of just having a Boolean Type
         message = "Your mileage and fuel has been entered"
     
@@ -105,3 +105,45 @@ def mpg_toggle(ui):
         ui.total_entry.config(state="disabled")
         ui.gallons_entry.config(state="disabled")
         ui.full_up_check.config(state="disabled")
+
+def validate_inputs(ui):
+    #TODO: See Below (Data Validation)
+    # if mpg active run
+    # total paid not blank
+    # Gallons not Blank
+    if ui.mileage_var.get() == "":
+        messagebox.showerror("Input Error", "Mileage can not be blank")
+        return False
+    
+    last_reading = ui.db.get_mileage_by_ID(ui.cars[ui.car_combo.current()]["CarID"])
+    if last_reading is not None:
+        if int(ui.mileage_var.get()) < last_reading["OdometerReading"] :
+            messagebox.showerror("Input Error", "Mileage must be bigger than less reading")
+            return False
+    
+    if not is_valid_date(ui.date_var.get()):
+        messagebox.showerror("Input Error", "Invalid date format.\nUse YYYY-MM-DD (e.g. 2026-04-01).")
+        return False
+    
+    if dt.datetime.strptime(ui.date_var.get(), "%Y-%m-%d").date() > dt.date.today():
+        messagebox.showerror("Input Error", "Date can not be in the future")
+        return False
+    
+    if ui.mpg_var.get():
+        if ui.total_paid_var.get() == "":
+            messagebox.showerror("Input Error", "Total paid can not be blank")
+            return False
+        
+        if ui.gallons_bought_var.get() == "":
+            messagebox.showerror("Input Error", "Gallons bought can not be blank")
+            return False
+    
+    return True
+
+def is_valid_date(date_str):
+    try:
+        dt.datetime.strptime(date_str, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
+
