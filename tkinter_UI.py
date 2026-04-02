@@ -1,9 +1,12 @@
 import tkinter as tk
 from tkinter import ttk
 
+import datetime as dt
+
 #* Module Imports
 from modules.UI_elements.car_manager import show_car_manager
 from modules.UI_elements.mileage_screen import show_mileage_screen
+from modules.UI_elements.recur_service_manager import show_recur_service_manager
 
 
 class Service_UI:
@@ -18,7 +21,6 @@ class Service_UI:
         
         self.db = db
         
-        #Call to Info used on multiple screens
         self.cars = self.db.get_all_cars()
         
         #Runtime
@@ -26,8 +28,6 @@ class Service_UI:
 
 
     #* Builders
-
-
     def _show_main_screen(self):
         self._clear_frame()
         self.master.columnconfigure(0, weight=1)
@@ -39,13 +39,13 @@ class Service_UI:
         mileage_button = ttk.Button(self.master, text="Enter Mileage", command=lambda: show_mileage_screen(self))
         mileage_button.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
         
-        service_button = ttk.Button(self.master, text="Service Entering", command="")
+        service_button = ttk.Button(self.master, text="Service Entering")
         service_button.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
         
         man_cars_button = ttk.Button(self.master, text="Manage cars", command=lambda: show_car_manager(self))
         man_cars_button.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
         
-        man_services_button = ttk.Button(self.master, text="Manage recurring services")
+        man_services_button = ttk.Button(self.master, text="Manage recurring services", command=lambda: show_recur_service_manager(self))
         man_services_button.grid(row=2, column=1, padx=10, pady=10, sticky="ew")
         
         gen_report = ttk.Button(self.master, text="Generate Service Report")
@@ -74,6 +74,13 @@ class Service_UI:
             return True
         try:
             float(new_value)
+            return True
+        except ValueError:
+            return False
+
+    def is_valid_date(date_str):
+        try:
+            dt.datetime.strptime(date_str, "%Y-%m-%d")
             return True
         except ValueError:
             return False

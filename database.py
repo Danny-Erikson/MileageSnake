@@ -1,7 +1,5 @@
 import sqlite3
 
-#* Database calls go here and the functions are called in the UI 
-
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS Cars (
     CarID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,9 +32,10 @@ CREATE TABLE IF NOT EXISTS RecurringServices(
     ServiceId INTEGER PRIMARY KEY AUTOINCREMENT,
     Name TEXT NOT NULL,
     CarID INT,
-    DueMileage INTEGER NOT NULL,
-    DueDays INTEGER NOT NULL,
+    DueMileage INTEGER,
+    DueDays INTEGER,
     FOREIGN KEY (CarID) REFERENCES Cars(CarID)
+    CHECK (NOT (DueMileage IS NULL AND DueDays IS NULL))
 );
 
 CREATE TABLE IF NOT EXISTS ServicesDone(
@@ -132,3 +131,16 @@ class DB:
             """,
             (mileageID, gallonsBrought, totalCost, fullFillUp)
         )
+    
+    #* Recurring Services
+    def add_recurring_services(self, name, carID, dueMileage, dueDays):
+        self.execute(
+            """
+            INSERT INTO RecurringServices (Name, carID, DueMileage, DueDays)
+            VALUES (?, ?, ?, ?)
+            """,
+            (name, carID, dueMileage , dueDays)
+        )
+    
+    def get_all_recurring_service(self):
+        return self.fetchall("SELECT * FROM RecurringServices")
