@@ -9,7 +9,7 @@ from ui_padding import *
 #NOTE: self.cars is called at launch in tkinker_UI and we update it as needed. This is to reduce db calls
 
 def show_car_manager(ui):
-    #* Initialize Frame & Call DB
+    #* Initialize Frame
     ui._clear_frame()
     ui.master.columnconfigure(0, weight=1)
     ui.master.columnconfigure(1, weight=1)

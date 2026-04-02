@@ -9,7 +9,7 @@ from ui_padding import *
 #* Mileage
 
 def show_mileage_screen(ui):
-    #* Initialize Frame & Call DB
+    #* Initialize Frame
     ui._clear_frame()
     ui.master.columnconfigure(0, weight=1)
     ui.master.columnconfigure(1, weight=1)
@@ -107,10 +107,6 @@ def mpg_toggle(ui):
         ui.full_up_check.config(state="disabled")
 
 def validate_inputs(ui):
-    #TODO: See Below (Data Validation)
-    # if mpg active run
-    # total paid not blank
-    # Gallons not Blank
     if ui.mileage_var.get() == "":
         messagebox.showerror("Input Error", "Mileage can not be blank")
         return False
