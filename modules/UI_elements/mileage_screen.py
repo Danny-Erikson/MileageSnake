@@ -117,7 +117,7 @@ def validate_inputs(ui):
             messagebox.showerror("Input Error", "Mileage must be bigger than less reading")
             return False
     
-    if not is_valid_date(ui.date_var.get()):
+    if not ui.is_valid_date(ui.date_var.get()):
         messagebox.showerror("Input Error", "Invalid date format.\nUse YYYY-MM-DD (e.g. 2026-04-01).")
         return False
     
@@ -135,11 +135,4 @@ def validate_inputs(ui):
             return False
     
     return True
-
-def is_valid_date(date_str):
-    try:
-        dt.datetime.strptime(date_str, "%Y-%m-%d")
-        return True
-    except ValueError:
-        return False
 
