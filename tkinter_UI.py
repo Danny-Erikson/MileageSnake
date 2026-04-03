@@ -13,7 +13,7 @@ class Service_UI:
     def __init__(self, master, db):
         self.master = master
         master.title("Mileage Snake")
-        master.geometry("600x500")
+        master.geometry("800x1080")
         master.protocol("WM_DELETE_WINDOW", self._on_close)
         
         self.int_vcmd = master.register(self._only_numbers)
@@ -22,6 +22,8 @@ class Service_UI:
         self.db = db
         
         self.cars = self.db.get_all_cars()
+
+        self.car_index = 0 
         
         #Runtime
         self._show_main_screen()

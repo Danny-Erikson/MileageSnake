@@ -1,5 +1,7 @@
 import sqlite3
 
+#TODO: fix CarID to CarId
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS Cars (
     CarID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -141,6 +143,9 @@ class DB:
             """,
             (name, carID, dueMileage , dueDays)
         )
+    
+    def get_recurring_services_by_ID(self, serviceID):
+        return self.fetchone("SELECT * FROM RecurringServices WHERE serviceID = ?", (serviceID,))
     
     def get_recurring_services_by_carID(self, carID):
         return self.fetchall(("""SELECT *
