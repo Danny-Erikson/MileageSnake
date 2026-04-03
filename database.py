@@ -142,5 +142,12 @@ class DB:
             (name, carID, dueMileage , dueDays)
         )
     
-    def get_all_recurring_service(self):
-        return self.fetchall("SELECT * FROM RecurringServices")
+    def get_recurring_services_by_carID(self, carID):
+        return self.fetchall(("""SELECT *
+                                FROM RecurringServices
+                                WHERE CarID = ?
+                                ORDER BY 
+                                DueMileage IS NULL,
+                                DueMileage ASC,
+                                DueDays ASC;"""),
+                                (carID,))
