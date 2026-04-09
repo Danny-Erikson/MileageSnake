@@ -35,9 +35,19 @@ CREATE TABLE IF NOT EXISTS RecurringServices(
     Name TEXT NOT NULL,
     CarID INT,
     DueMileage INTEGER,
-    DueDays INTEGER,
-    FOREIGN KEY (CarID) REFERENCES Cars(CarID)
-    CHECK (NOT (DueMileage IS NULL AND DueDays IS NULL))
+    IntervalValue INTEGER,
+    IntervalUnit TEXT CHECK (IntervalUnit IN ('days', 'months', 'years')),
+    FOREIGN KEY (CarID) REFERENCES Cars(CarID),
+
+    CHECK (
+        DueMileage IS NOT NULL
+        OR (IntervalValue IS NOT NULL AND IntervalUnit IS NOT NULL)
+    ),
+
+    CHECK (
+        (IntervalValue IS NULL AND IntervalUnit IS NULL)
+        OR (IntervalValue IS NOT NULL AND IntervalUnit IS NOT NULL)
+    )
 );
 
 CREATE TABLE IF NOT EXISTS ServicesDone(
@@ -135,13 +145,13 @@ class DB:
         )
     
     #* Recurring Services
-    def add_recurring_services(self, name, carID, dueMileage, dueDays):
+    def add_recurring_services(self, name, carID, dueMileage, intervalValue, intervalUnit):
         self.execute(
             """
-            INSERT INTO RecurringServices (Name, carID, DueMileage, DueDays)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO RecurringServices (Name, carID, DueMileage, IntervalValue, IntervalUnit)
+            VALUES (?, ?, ?, ?, ?)
             """,
-            (name, carID, dueMileage , dueDays)
+            (name, carID, dueMileage , intervalValue, intervalUnit)
         )
     
     def get_recurring_services_by_ID(self, serviceID):
@@ -152,19 +162,17 @@ class DB:
                                 FROM RecurringServices
                                 WHERE CarID = ?
                                 ORDER BY 
-                                DueMileage IS NULL,
-                                DueMileage ASC,
-                                DueDays ASC;"""),
+                                DueMileage ASC;"""),
                                 (carID,))
     
-    def update_recurring_service(self, name, dueMileage, dueDays, service_id):
+    def update_recurring_service(self, name, dueMileage, intervalValue, intervalUnit,  service_id):
             self.execute(
                 """
                 UPDATE RecurringServices
-                SET Name = ?, DueMileage = ?, DueDays = ?
+                SET Name = ?, DueMileage = ?, IntervalValue = ?, intervalUnit = ?
                 WHERE ServiceId = ?
                 """,
-                (name, dueMileage, dueDays, service_id)
+                (name, dueMileage, intervalValue, intervalUnit, service_id)
             )
     
     def remove_recurring_service(self, service_id):

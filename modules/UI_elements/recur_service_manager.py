@@ -75,7 +75,7 @@ def on_car_change(ui):
         service_in_miles = tk.Label(ui.service_table, text=f"{service["DueMileage"]:,}" if service["DueMileage"] is not None else "")
         service_in_miles.grid(row=row_count, column=2, sticky="ew")
         
-        service_in_days = tk.Label(ui.service_table, text=service["DueDays"])
+        service_in_days = tk.Label(ui.service_table, text=f"{day_formatter(service["IntervalValue"], service["IntervalUnit"])}" if service["IntervalValue"] is not None else "")
         service_in_days.grid(row=row_count, column=3, sticky="ew")
         
         remove_service_button = tk.Button(
@@ -98,10 +98,12 @@ def show_service_form(ui, serviceID=None, editing=False):
     ui._clear_frame()
     ui.master.columnconfigure(0, weight=1)
     ui.master.columnconfigure(1, weight=1)
+    ui.master.columnconfigure(2, weight=1)
     
     ui.name_var = tk.StringVar()
     ui.due_mileage_var = tk.StringVar()
-    ui.due_days_var = tk.StringVar()
+    ui.time_value_var = tk.StringVar()
+    ui.time_unit_var = tk.StringVar()
     
     #* Conditional rendering
     # The editing flag is True if the user clicked the edit button to call the function
@@ -116,17 +118,18 @@ def show_service_form(ui, serviceID=None, editing=False):
         
         ui.name_var.set(value=service["Name"])
         ui.due_mileage_var.set(value=service["DueMileage"] or "")
-        ui.due_days_var.set(value=service["DueDays"] or "")
+        ui.time_value_var.set(value=service["IntervalValue"] or "")
+        ui.time_unit_var.set(value=service["IntervalUnit"] or "")
         
         submit_button = ttk.Button(ui.master, text="Submit", command=lambda serviceID=service["ServiceId"]:edit_service(ui, serviceID))
-        submit_button.grid(row= 5, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
+        submit_button.grid(row= 5, columnspan=3, padx=BUTTON_X, pady=BUTTON_Y)
     
     else:
         title_label = ttk.Label(ui.master, text="Add a New Service", font=("Arial", 16))
         title_label.grid(row=0, column=0, columnspan=3, pady=TITLE_Y)
         
         submit_button = ttk.Button(ui.master, text="Submit", command=lambda: add_service(ui))
-        submit_button.grid(row= 5, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
+        submit_button.grid(row= 5, columnspan=3, padx=BUTTON_X, pady=BUTTON_Y)
     
     #* Building of Shared Elements
     car_label = ttk.Label(ui.master, text=f"Service for: {ui.cars[ui.car_index]["Year"]} {ui.cars[ui.car_index]["Make"]} {ui.cars[ui.car_index]["Model"]}", font=(14))
@@ -135,20 +138,23 @@ def show_service_form(ui, serviceID=None, editing=False):
     name_label = ttk.Label(ui.master, text="Name:")
     name_label.grid(row=2, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
     name_entry = ttk.Entry(ui.master, textvariable=ui.name_var)
-    name_entry.grid(row=2, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
+    name_entry.grid(row=2, column=1, sticky="we", padx=ENTRY_X, pady=ENTRY_Y)
     
     mileage_label = ttk.Label(ui.master, text="Due Mileage:")
     mileage_label.grid(row=3, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
     mileage_entry = ttk.Entry(ui.master, textvariable=ui.due_mileage_var, validate="key", validatecommand=(ui.int_vcmd, "%P"))
-    mileage_entry.grid(row=3, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
+    mileage_entry.grid(row=3, column=1, sticky="we", padx=ENTRY_X, pady=ENTRY_Y)
     
-    days_label = ttk.Label(ui.master, text="Due Days:")
-    days_label.grid(row=4, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
-    days_entry = ttk.Entry(ui.master, textvariable=ui.due_days_var, validate="key", validatecommand=(ui.int_vcmd, "%P"))
-    days_entry.grid(row=4, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
+    time_label = ttk.Label(ui.master, text="Due Every:")
+    time_label.grid(row=4, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
+    time_entry = ttk.Entry(ui.master, textvariable=ui.time_value_var, validate="key", validatecommand=(ui.int_vcmd, "%P"))
+    time_entry.grid(row=4, column=1, sticky="we", padx=ENTRY_X, pady=ENTRY_Y)
+    time_combo = ttk.Combobox(ui.master, textvariable=ui.time_unit_var, state="readonly")
+    time_combo["values"] = ["days", "months", "years"]
+    time_combo.grid(row=4, column=2, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
     back_button = ttk.Button(ui.master, text="Go Back", command=lambda: show_recur_service_manager(ui))
-    back_button.grid(row= 6, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
+    back_button.grid(row= 6, columnspan=3, padx=BUTTON_X, pady=BUTTON_Y)
 
 #* Helpers
 
@@ -157,21 +163,30 @@ def validate_inputs(ui):
         messagebox.showerror("Input Error", "Name can not be blank")
         return False
     
-    if ui.due_mileage_var.get() == "" and ui.due_days_var.get() == "":
-        messagebox.showerror("Input Error", "Mileage Due and Days Due cannot both be blank\nOne or both must be filled")
+    if ui.due_mileage_var.get() == "" and ui.time_value_var.get() == "":
+        messagebox.showerror("Input Error", "Mileage Due and Due every cannot both be blank\nOne or both must be filled")
+        return False
+    
+    if ui.time_value_var.get() != "" and ui.time_unit_var.get() == "":
+        messagebox.showerror("Input Error", "Select a timeframe from the box")
         return False
     
     return True
 
 def add_service(ui):
-    #TODO: Check DB Handling of this
     if not validate_inputs(ui):
         return
-    ui.db.add_recurring_services(ui.name_var.get(),
+    
+    safe_inputs = (ui.name_var.get(),
                     ui.cars[ui.car_index]["CarID"],
-                    ui.due_mileage_var.get() or None,
-                    ui.due_days_var.get() or None,
-                    )
+                    ui.due_mileage_var.get() or None)
+    
+    if ui.time_value_var.get() == "":
+        sanitized_inputs = (*safe_inputs, None, None)
+    else:
+        sanitized_inputs = (*safe_inputs, ui.time_value_var.get(), ui.time_unit_var.get())
+    
+    ui.db.add_recurring_services(*sanitized_inputs)
     
     show_recur_service_manager(ui)
 
@@ -179,11 +194,15 @@ def edit_service(ui, serviceID):
     if not validate_inputs(ui):
         return
     
-    ui.db.update_recurring_service(ui.name_var.get(),
-                    ui.due_mileage_var.get() or None,
-                    ui.due_days_var.get() or None,
-                    serviceID
-                    )
+    safe_inputs = (ui.name_var.get(),
+                    ui.due_mileage_var.get() or None)
+    
+    if ui.time_value_var.get() == "":
+        sanitized_inputs = (*safe_inputs, None, None)
+    else:
+        sanitized_inputs = (*safe_inputs, ui.time_value_var.get(), ui.time_unit_var.get())
+    
+    ui.db.update_recurring_service(*sanitized_inputs, serviceID)
     
     show_recur_service_manager(ui)
 
@@ -206,11 +225,36 @@ def day_sort(service, split):
     while split != []:
         i = 0
         found = False
+        match split[0]["IntervalUnit"]:
+            case "days":
+                i_days = split[0]["IntervalValue"]
+            case "months":
+                i_days = int(split[0]["IntervalValue"]) * 30
+            case "years":
+                i_days = int(split[0]["IntervalValue"]) * 365
+        
         while not found:
-            if int(split[0]["DueDays"]) >= int(0 if service[i+1]["DueDays"] == None else service[i+1]["DueDays"]):
+            next_service = service[i+1]
+            
+            match next_service["IntervalUnit"]:
+                case None:
+                    c_days = 0
+                case "days":
+                    c_days = next_service["IntervalValue"]
+                case "months":
+                    c_days = int(next_service["IntervalValue"]) * 30
+                case "years":
+                    c_days = int(next_service["IntervalValue"]) * 365
+            
+            if i_days >= c_days:
                 i += 1
             else:
                 service.insert(i, split[0])
                 split.pop(0)
                 found = True
 
+def day_formatter(value, unit):
+    if value == 1:
+        return f"{value} {unit[:-1]}"
+    else:
+        return f"{value} {unit}"
