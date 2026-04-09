@@ -156,3 +156,17 @@ class DB:
                                 DueMileage ASC,
                                 DueDays ASC;"""),
                                 (carID,))
+    
+    def update_recurring_service(self, name, dueMileage, dueDays, service_id):
+            self.execute(
+                """
+                UPDATE RecurringServices
+                SET Name = ?, DueMileage = ?, DueDays = ?
+                WHERE ServiceId = ?
+                """,
+                (name, dueMileage, dueDays, service_id)
+            )
+    
+    def remove_recurring_service(self, service_id):
+        self.execute("DELETE FROM RecurringServices WHERE ServiceId = ?", (service_id,))
+    

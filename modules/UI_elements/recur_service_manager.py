@@ -72,7 +72,7 @@ def on_car_change(ui):
         service_name = tk.Label(ui.service_table, text=service["Name"])
         service_name.grid(row=row_count, column=1, sticky="ew")
         
-        service_in_miles = tk.Label(ui.service_table, text=service["DueMileage"])
+        service_in_miles = tk.Label(ui.service_table, text=f"{service["DueMileage"]:,}" if service["DueMileage"] is not None else "")
         service_in_miles.grid(row=row_count, column=2, sticky="ew")
         
         service_in_days = tk.Label(ui.service_table, text=service["DueDays"])
@@ -139,12 +139,12 @@ def show_service_form(ui, serviceID=None, editing=False):
     
     mileage_label = ttk.Label(ui.master, text="Due Mileage:")
     mileage_label.grid(row=3, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
-    mileage_entry = ttk.Entry(ui.master, textvariable=ui.due_mileage_var)
+    mileage_entry = ttk.Entry(ui.master, textvariable=ui.due_mileage_var, validate="key", validatecommand=(ui.int_vcmd, "%P"))
     mileage_entry.grid(row=3, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
     days_label = ttk.Label(ui.master, text="Due Days:")
     days_label.grid(row=4, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
-    days_entry = ttk.Entry(ui.master, textvariable=ui.due_days_var)
+    days_entry = ttk.Entry(ui.master, textvariable=ui.due_days_var, validate="key", validatecommand=(ui.int_vcmd, "%P"))
     days_entry.grid(row=4, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
     back_button = ttk.Button(ui.master, text="Go Back", command=lambda: show_recur_service_manager(ui))
@@ -153,20 +153,46 @@ def show_service_form(ui, serviceID=None, editing=False):
 #* Helpers
 
 def validate_inputs(ui):
-    #TODO: Add function
-    pass
+    if ui.name_var.get() == "":
+        messagebox.showerror("Input Error", "Name can not be blank")
+        return False
+    
+    if ui.due_mileage_var.get() == "" and ui.due_days_var.get() == "":
+        messagebox.showerror("Input Error", "Mileage Due and Days Due cannot both be blank\nOne or both must be filled")
+        return False
+    
+    return True
 
-def add_service(self):
-    #TODO: Add function
-    pass
+def add_service(ui):
+    #TODO: Check DB Handling of this
+    if not validate_inputs(ui):
+        return
+    ui.db.add_recurring_services(ui.name_var.get(),
+                    ui.cars[ui.car_index]["CarID"],
+                    ui.due_mileage_var.get() or None,
+                    ui.due_days_var.get() or None,
+                    )
+    
+    show_recur_service_manager(ui)
 
-def edit_service(self, serviceID):
-    #TODO: Add function
-    pass
+def edit_service(ui, serviceID):
+    if not validate_inputs(ui):
+        return
+    
+    ui.db.update_recurring_service(ui.name_var.get(),
+                    ui.due_mileage_var.get() or None,
+                    ui.due_days_var.get() or None,
+                    serviceID
+                    )
+    
+    show_recur_service_manager(ui)
 
-def remove_service(self, serviceID):
-    #TODO: Add function
-    pass
+def remove_service(ui, serviceID):
+    service = ui.db.get_recurring_services_by_ID(serviceID)
+    confirmed = messagebox.askyesno("Delete Service", f"Are you sure you want to delete {service["Name"]}")
+    if confirmed:
+        ui.db.remove_recurring_service(serviceID)
+        on_car_change(ui)
 
 def find_days_only(service):
     days = [s for s in service if s["DueMileage"] is None]
