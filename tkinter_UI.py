@@ -7,6 +7,7 @@ from ui_padding import *
 
 #* Module Imports
 from modules.UI_elements.mileage_screen import show_mileage_screen
+from modules.UI_elements.service_screen import show_service_screen
 from modules.UI_elements.car_manager import show_car_manager
 from modules.UI_elements.recur_service_manager import show_recur_service_manager
 from modules.UI_elements.default_services_editor import show_default_services_editor
@@ -44,7 +45,7 @@ class Service_UI:
         mileage_button = ttk.Button(self.master, text="Enter Mileage", command=lambda: show_mileage_screen(self))
         mileage_button.grid(row=1, column=0, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
         
-        service_button = ttk.Button(self.master, text="Service Entering")
+        service_button = ttk.Button(self.master, text="Service Entering", command=lambda: show_service_screen(self))
         service_button.grid(row=1, column=1, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
         
         gen_report = ttk.Button(self.master, text="Generate Reports")
@@ -104,7 +105,7 @@ class Service_UI:
         except ValueError:
             return False
 
-    def is_valid_date(date_str):
+    def is_valid_date(self, date_str):
         try:
             dt.datetime.strptime(date_str, "%Y-%m-%d")
             return True

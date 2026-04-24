@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS RecurringServices(
 CREATE TABLE IF NOT EXISTS ServicesDone(
     CarServiceId INTEGER PRIMARY KEY AUTOINCREMENT,
     Name TEXT NOT NULL,
-    CarID INT,
+    CarId INT,
     ServiceId INT,
     MileageId INT,
     Description TEXT,
@@ -253,3 +253,13 @@ class DB:
     
     def remove_services_template(self, templateId):
         self.execute("DELETE FROM ServiceTemplates WHERE TemplateId = ?", (templateId,))
+    
+    #* Service Done
+    def add_service(self, name, carId, serviceId, mileageId, description):
+        self.execute(
+            """
+            INSERT INTO ServicesDone (Name, CarId, ServiceId, MileageId, Description)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (name, carId, serviceId, mileageId, description)
+        )

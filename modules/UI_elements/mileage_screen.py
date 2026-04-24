@@ -6,6 +6,8 @@ from ui_padding import *
 
 #NOTE: self.cars is called at launch in tkinker_UI
 
+#TODO: UPDATE with a cal from tkinker
+
 #* Mileage
 
 def show_mileage_screen(ui):
@@ -31,7 +33,7 @@ def show_mileage_screen(ui):
     
     ui.car_combo = ttk.Combobox(ui.master, textvariable=ui.car_var, state="readonly")
     ui.car_combo["values"] = [f"{c['Year']} {c['Make']} {c['Model']}" for c in ui.cars]
-    ui.car_var.set(ui.car_combo["values"][0])
+    ui.car_var.set(ui.car_combo["values"][ui.car_index])
     ui.car_combo.grid(row=1, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
     mileage_label = ttk.Label(ui.master, text="Mileage:")
