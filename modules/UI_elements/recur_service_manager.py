@@ -90,7 +90,7 @@ def on_car_change(ui):
     #* Bottom of screen
     add_new = tk.Button(ui.service_table, text="Add New Service", command=lambda: show_service_form(ui))
     add_new.grid(row=row_count + 2, column=0, columnspan=5, padx=BUTTON_X, pady=BUTTON_Y)
-    go_back = tk.Button(ui.service_table, text="Go Back", command=ui._show_main_screen)
+    go_back = tk.Button(ui.service_table, text="Go Back", command=ui.show_advanced_area)
     go_back.grid(row=row_count + 3, column=0, columnspan=5, padx=BUTTON_X, pady=BUTTON_Y)
 
 def show_service_form(ui, serviceID=None, editing=False):

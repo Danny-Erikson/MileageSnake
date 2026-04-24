@@ -48,7 +48,7 @@ def show_mileage_screen(ui):
     mileage_date.grid(row=3, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
     #* Fuel Area
-    mpg_check = tk.Checkbutton(ui.master,text="MPG Entry",variable=ui.mpg_var,command=lambda: mpg_toggle(ui))
+    mpg_check = tk.Checkbutton(ui.master,text="MPG Entry",variable=ui.mpg_var, command=lambda: mpg_toggle(ui))
     mpg_check.grid(row=4, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
     
     ui.total_label = tk.Label(ui.master, text="Total Paid:")
@@ -135,4 +135,3 @@ def validate_inputs(ui):
             return False
     
     return True
-
