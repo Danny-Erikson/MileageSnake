@@ -3,7 +3,6 @@ from tkinter import ttk, messagebox
 
 from ui_padding import *
 
-
 #* Car Manager
 
 #NOTE: self.cars is called at launch in tkinker_UI and we update it as needed. This is to reduce db calls
@@ -53,7 +52,7 @@ def show_car_manager(ui):
     copy_inst.grid(row=row_count + 1, column=0, columnspan=5, padx=BUTTON_X, pady=BUTTON_Y)
     add_new = tk.Button(ui.master, text="Add New Car", command=lambda: show_car_form(ui))
     add_new.grid(row=row_count + 2, column=0, columnspan=5, padx=BUTTON_X, pady=BUTTON_Y)
-    go_back = tk.Button(ui.master, text="Go Back", command=ui._show_main_screen)
+    go_back = tk.Button(ui.master, text="Go Back", command=ui.show_advanced_area)
     go_back.grid(row=row_count + 3, column=0, columnspan=5, padx=BUTTON_X, pady=BUTTON_Y)
 
 def show_car_form(ui, editing=False, carID=None):
@@ -131,7 +130,6 @@ def show_car_form(ui, editing=False, carID=None):
     back_button = ttk.Button(ui.master, text="Go Back", command=lambda: show_car_manager(ui))
     back_button.grid(row= 8, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
 
-
 #* Car Manager Helper
 
 def validate_inputs(ui):
@@ -157,13 +155,21 @@ def add_new_car(ui):
     if not validate_inputs(ui):
         return
     
-    ui.db.add_car(ui.vin_var.get().upper() or None,
+    car_id = ui.db.add_car(ui.vin_var.get().upper() or None,
                     ui.license_var.get().upper() or None,
                     int(ui.year_var.get()),
                     ui.make_var.get(),
                     ui.model_var.get(),
                     ui.trim_var.get() or None,
                     )
+    
+    #* Ask about optional services
+    print(car_id)
+    op_list = ui.db.get_asking_temp_services()
+    for service in op_list:
+        user_response = messagebox.askyesno("Add Service", f"{service["Question"]}?")
+        if user_response:
+            ui.db.add_recurring_services(service["Name"], car_id, service["DueMileage"], service["IntervalValue"], service["IntervalUnit"])
     
     ui.cars = ui.db.get_all_cars()
     show_car_manager(ui)
@@ -220,4 +226,3 @@ def copy_text(event):
         msg = ttk.Label(root, text="Copied!")
         msg.place(x=x, y=y)
         root.after(800, msg.destroy)
-

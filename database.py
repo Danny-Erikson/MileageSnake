@@ -1,6 +1,8 @@
 import sqlite3
+from pathlib import Path
 
 #TODO: fix CarID to CarId
+#TODO: Update ERD
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS Cars (
@@ -28,6 +30,16 @@ CREATE TABLE IF NOT EXISTS FuelLog (
     TotalCost REAL NOT NULL,
     FullFillUp INTEGER NOT NULL DEFAULT 1,
     FOREIGN KEY (MileageId) REFERENCES Mileage(MileageId)
+);
+
+CREATE TABLE IF NOT EXISTS ServiceTemplates (
+    TemplateId INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT NOT NULL,
+    DueMileage INTEGER,
+    IntervalValue INTEGER,
+    IntervalUnit TEXT CHECK (IntervalUnit IN ('days', 'months', 'years')),
+    IsOptional INTEGER NOT NULL,
+    Question TEXT
 );
 
 CREATE TABLE IF NOT EXISTS RecurringServices(
@@ -65,10 +77,32 @@ CREATE TABLE IF NOT EXISTS ServicesDone(
 
 class DB:
     def __init__(self, path):
-        self.conn = sqlite3.connect(path)
+        db_path = Path(path)
+        is_new_db = not db_path.exists()
+        
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        self.conn = sqlite3.connect(db_path)
         self.conn.row_factory = sqlite3.Row
-    
+        
         self.conn.executescript(SCHEMA)
+        
+        if is_new_db:
+            self.conn.execute("""
+            INSERT INTO ServiceTemplates 
+                (Name, DueMileage, IntervalValue, IntervalUnit, IsOptional, Question)
+            VALUES
+                ('Oil change', 5000, 6, 'months', 0, NULL),
+                ('Eng. Intake Filter', 15000, 1, 'years', 0, NULL),
+                ('Cabin Air Filter', 15000, 1, 'years', 0, NULL),
+                ('Coolant', 30000, 4, 'years', 0, NULL),
+                ('Power Steering', 40000, 3, 'years', 0, NULL),
+                ('Transmission Fluid', 60000, NULL, NULL, 0, NULL),
+                ('Brake Fluid', 45000, 3, 'years', 0, NULL),
+                ('Rear Differential Fluid', 60000, 5, 'years', 1, 'Does the car have a rear differential');
+            """)
+            
+            self.conn.commit()
     
     def close(self):
         self.conn.close()
@@ -94,13 +128,23 @@ class DB:
     
     #* Cars
     def add_car(self, vin, plate, year, make, model, trim):
-        self.execute(
+        car_id = self.execute(
             """
             INSERT INTO Cars (VINNumber, LicensePlate, Year, Make, Model, Trim)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
             (vin, plate, year, make, model, trim)
         )
+        
+        self.execute("""
+        INSERT INTO RecurringServices (Name, CarID, DueMileage, IntervalValue, IntervalUnit)
+        SELECT Name, ?, DueMileage, IntervalValue, IntervalUnit
+        FROM ServiceTemplates
+        WHERE IsOptional = 0;
+        """,
+        (car_id,))
+        
+        return car_id
     
     def get_all_cars(self):
         return self.fetchall("SELECT * FROM Cars")
@@ -178,3 +222,34 @@ class DB:
     def remove_recurring_service(self, service_id):
         self.execute("DELETE FROM RecurringServices WHERE ServiceId = ?", (service_id,))
     
+    #* Service Templates
+    def add_services_template(self, name, dueMileage, intervalValue, intervalUnit, isOptional, question):
+        self.execute(
+            """
+            INSERT INTO ServiceTemplates (Name, DueMileage, IntervalValue, IntervalUnit, IsOptional, Question)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (name, dueMileage, intervalValue, intervalUnit, isOptional, question)
+        )
+    
+    def get_auto_temp_services(self):
+        return self.fetchall("SELECT * FROM ServiceTemplates WHERE IsOptional = 0 ORDER BY DueMileage ASC")
+    
+    def get_asking_temp_services(self):
+        return self.fetchall("SELECT * FROM ServiceTemplates WHERE IsOptional = 1 ORDER BY DueMileage ASC")
+    
+    def get_services_temp_by_id(self, templateId):
+        return self.fetchone("SELECT * FROM ServiceTemplates  WHERE TemplateId = ?", (templateId,))
+    
+    def update_services_template(self, name, dueMileage, intervalValue, intervalUnit, isOptional, question, templateId):
+            self.execute(
+                """
+                UPDATE ServiceTemplates
+                SET Name = ?, DueMileage = ?, IntervalValue = ?, intervalUnit = ?, IsOptional = ?, Question = ?
+                WHERE TemplateId = ?
+                """,
+                (name, dueMileage, intervalValue, intervalUnit, isOptional, question, templateId)
+            )
+    
+    def remove_services_template(self, templateId):
+        self.execute("DELETE FROM ServiceTemplates WHERE TemplateId = ?", (templateId,))
