@@ -1,12 +1,9 @@
 import sqlite3
 from pathlib import Path
 
-#TODO: fix CarID to CarId
-#TODO: Update ERD
-
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS Cars (
-    CarID INTEGER PRIMARY KEY AUTOINCREMENT,
+    CarId INTEGER PRIMARY KEY AUTOINCREMENT,
     VINNumber TEXT,
     LicensePlate TEXT,
     Year INT NOT NULL,
@@ -17,10 +14,10 @@ CREATE TABLE IF NOT EXISTS Cars (
 
 CREATE TABLE IF NOT EXISTS Mileage (
     MileageId INTEGER PRIMARY KEY AUTOINCREMENT,
-    CarID INT,
+    CarId INT,
     OdometerReading INT NOT NULL,
     Date TEXT NOT NULL,
-    FOREIGN KEY (CarID) REFERENCES Cars(CarID)
+    FOREIGN KEY (CarId) REFERENCES Cars(CarId)
 );
 
 CREATE TABLE IF NOT EXISTS FuelLog (
@@ -45,11 +42,11 @@ CREATE TABLE IF NOT EXISTS ServiceTemplates (
 CREATE TABLE IF NOT EXISTS RecurringServices(
     ServiceId INTEGER PRIMARY KEY AUTOINCREMENT,
     Name TEXT NOT NULL,
-    CarID INT,
+    CarId INT,
     DueMileage INTEGER,
     IntervalValue INTEGER,
     IntervalUnit TEXT CHECK (IntervalUnit IN ('days', 'months', 'years')),
-    FOREIGN KEY (CarID) REFERENCES Cars(CarID),
+    FOREIGN KEY (CarId) REFERENCES Cars(CarId),
 
     CHECK (
         DueMileage IS NOT NULL
@@ -69,7 +66,7 @@ CREATE TABLE IF NOT EXISTS ServicesDone(
     ServiceId INT,
     MileageId INT,
     Description TEXT,
-    FOREIGN KEY (CarID) REFERENCES Cars(CarID),
+    FOREIGN KEY (CarId) REFERENCES Cars(CarId),
     FOREIGN KEY (ServiceId) REFERENCES RecurringServices(ServiceId),
     FOREIGN KEY (MileageId) REFERENCES Mileage(MileageId)
 );
@@ -137,7 +134,7 @@ class DB:
         )
         
         self.execute("""
-        INSERT INTO RecurringServices (Name, CarID, DueMileage, IntervalValue, IntervalUnit)
+        INSERT INTO RecurringServices (Name, CarId, DueMileage, IntervalValue, IntervalUnit)
         SELECT Name, ?, DueMileage, IntervalValue, IntervalUnit
         FROM ServiceTemplates
         WHERE IsOptional = 0;
@@ -150,26 +147,26 @@ class DB:
         return self.fetchall("SELECT * FROM Cars")
     
     def get_car_by_ID(self, carID):
-        return self.fetchone("SELECT * FROM Cars WHERE CarID = ?", (carID,))
+        return self.fetchone("SELECT * FROM Cars WHERE CarId = ?", (carID,))
     
     def update_car(self, vin, plate, year, make, model, trim, car_id):
         self.execute(
             """
             UPDATE Cars
             SET VINNumber = ?, LicensePlate = ?, Year = ?, Make = ?, Model = ?, Trim = ?
-            WHERE CarID = ?
+            WHERE CarId = ?
             """,
             (vin, plate, year, make, model, trim, car_id)
         )
     
     def remove_car(self, carID):
-        self.execute("DELETE FROM Cars WHERE CarID = ?", (carID,))
+        self.execute("DELETE FROM Cars WHERE CarId = ?", (carID,))
     
     #* Mileage
     def add_mileage(self, carID, reading, date):
         mileageID = self.execute(
             """
-            INSERT INTO Mileage (CarID, OdometerReading, Date)
+            INSERT INTO Mileage (CarId, OdometerReading, Date)
             VALUES (?, ?, ?)
             """,
             (carID, reading, date)
@@ -177,7 +174,7 @@ class DB:
         return mileageID
     
     def get_mileage_by_ID(self, carID):
-        return self.fetchone("SELECT * FROM Mileage WHERE CarID = ?", (carID,))
+        return self.fetchone("SELECT * FROM Mileage WHERE CarId = ?", (carID,))
     
     def add_fuel(self, mileageID, gallonsBrought, totalCost, fullFillUp):
         self.execute(
@@ -192,7 +189,7 @@ class DB:
     def add_recurring_services(self, name, carID, dueMileage, intervalValue, intervalUnit):
         self.execute(
             """
-            INSERT INTO RecurringServices (Name, carID, DueMileage, IntervalValue, IntervalUnit)
+            INSERT INTO RecurringServices (Name, CarId, DueMileage, IntervalValue, IntervalUnit)
             VALUES (?, ?, ?, ?, ?)
             """,
             (name, carID, dueMileage , intervalValue, intervalUnit)
@@ -204,7 +201,7 @@ class DB:
     def get_recurring_services_by_carID(self, carID):
         return self.fetchall(("""SELECT *
                                 FROM RecurringServices
-                                WHERE CarID = ?
+                                WHERE CarId = ?
                                 ORDER BY 
                                 DueMileage ASC;"""),
                                 (carID,))

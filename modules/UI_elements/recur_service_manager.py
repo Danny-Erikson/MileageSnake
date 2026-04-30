@@ -55,7 +55,7 @@ def on_car_change(ui):
     
     #* Grab Data
     ui.car_index = ui.car_combo.current()
-    services = ui.db.get_recurring_services_by_carID(ui.cars[ui.car_index]["CarID"])
+    services = ui.db.get_recurring_services_by_carID(ui.cars[ui.car_index]["CarId"])
     
     day_sort(services, find_days_only(services))
     
@@ -178,7 +178,7 @@ def add_service(ui):
         return
     
     safe_inputs = (ui.name_var.get(),
-                    ui.cars[ui.car_index]["CarID"],
+                    ui.cars[ui.car_index]["CarId"],
                     ui.due_mileage_var.get() or None)
     
     if ui.time_value_var.get() == "":
@@ -221,7 +221,8 @@ def find_days_only(service):
 def day_sort(service, split):
     # Take this a future todo but at some point it pipe in the cars AVG Miles per day to this
     # It would be closer to the intend of this sort which is to sort the services based on frequency
-    # we could probably do this with a cached MPD and convert DueDays to miles and compare that way 
+    # we could probably do this with a cached MPD and convert DueDays to miles and compare that way
+    #FIXME: day sort is kinda broken 3 years did not fall into place
     while split != []:
         i = 0
         found = False

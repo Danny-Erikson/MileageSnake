@@ -32,7 +32,7 @@ def show_car_manager(ui):
     # The .bind on each element to allow the text to be copyable 
     row_count = 2
     for car in ui.cars:
-        edit_button = tk.Button(ui.master, text="🖉", command=lambda carID=car["CarID"]: show_car_form(ui, editing=True, carID=carID))
+        edit_button = tk.Button(ui.master, text="🖉", command=lambda carID=car["CarId"]: show_car_form(ui, editing=True, carID=carID))
         edit_button.grid(row=row_count, column=0, sticky="ew")
         car_name = tk.Label(ui.master, text=f"{car["Year"]} {car["Make"]} {car["Model"]} {car["Trim"] or ""}")
         car_name.bind("<Button-1>", copy_text)
@@ -43,7 +43,7 @@ def show_car_manager(ui):
         car_license = tk.Label(ui.master, text=car["VINNumber"])
         car_license.bind("<Button-1>", copy_text)
         car_license.grid(row=row_count, column=3, sticky="ew")
-        remove_car_button = tk.Button(ui.master, text="Remove Car", command=lambda carID=car["CarID"]: remove_car(ui, carID=carID))
+        remove_car_button = tk.Button(ui.master, text="Remove Car", command=lambda carID=car["CarId"]: remove_car(ui, carID=carID))
         remove_car_button.grid(row=row_count, column=4, sticky="ew")
         row_count += 1
     
@@ -86,7 +86,7 @@ def show_car_form(ui, editing=False, carID=None):
         ui.license_var.set(value=car["LicensePlate"] or "")
         ui.vin_var.set(value=car["VINNumber"] or "")
         
-        submit_button = ttk.Button(ui.master, text="Submit", command=lambda carID=car["CarID"]:edit_car(ui, carID))
+        submit_button = ttk.Button(ui.master, text="Submit", command=lambda carID=car["CarId"]:edit_car(ui, carID))
         submit_button.grid(row= 7, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
     
     else:
@@ -145,7 +145,7 @@ def validate_inputs(ui):
         messagebox.showerror("Input Error", "Model can not be blank")
         return False
     
-    if len(ui.vin_var.get()) == 17:
+    if ui.vin_var.get() != "" and len(ui.vin_var.get()) != 17:
         messagebox.showerror("Input Error", "VIN must be 17 characters long")
         return False
     
@@ -164,7 +164,6 @@ def add_new_car(ui):
                     )
     
     #* Ask about optional services
-    print(car_id)
     op_list = ui.db.get_asking_temp_services()
     for service in op_list:
         user_response = messagebox.askyesno("Add Service", f"{service["Question"]}?")

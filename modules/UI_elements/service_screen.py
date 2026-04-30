@@ -4,6 +4,9 @@ import datetime as dt
 
 from ui_padding import *
 
+#TODO: ADD Confirm to service entering
+#TODO: FIXME Look for mileage id if mileage == mileage and date == date in db
+
 def show_service_screen(ui):
     #* Initialize Frame
     ui._clear_frame()
@@ -88,7 +91,7 @@ def build_general_service(ui):
 
 def build_reoccurring_service(ui):
     ui.car_index = ui.car_combo.current()
-    services = ui.db.get_recurring_services_by_carID(ui.cars[ui.car_index]["CarID"])
+    services = ui.db.get_recurring_services_by_carID(ui.cars[ui.car_index]["CarId"])
     
     ui.selected = {}
     row_count = 0
@@ -109,7 +112,7 @@ def validate_inputs(ui):
         messagebox.showerror("Input Error", "Mileage can not be blank")
         return False
     
-    last_reading = ui.db.get_mileage_by_ID(ui.cars[ui.car_combo.current()]["CarID"])
+    last_reading = ui.db.get_mileage_by_ID(ui.cars[ui.car_combo.current()]["CarId"])
     if last_reading is not None:
         if int(ui.mileage_var.get()) < last_reading["OdometerReading"] :
             messagebox.showerror("Input Error", "Mileage must be bigger than less reading")
@@ -129,9 +132,9 @@ def add_one_service(ui):
     if not validate_inputs(ui):
         return
     
-    mileage_id = ui.db.add_mileage(ui.cars[ui.car_index]["CarID"], ui.mileage_var.get(), ui.date_var.get())
+    mileage_id = ui.db.add_mileage(ui.cars[ui.car_index]["CarId"], ui.mileage_var.get(), ui.date_var.get())
     
-    ui.db.add_service(ui.name_var.get(), ui.cars[ui.car_index]["CarID"], None, mileage_id, ui.description_box.get("1.0", "end"))
+    ui.db.add_service(ui.name_var.get(), ui.cars[ui.car_index]["CarId"], None, mileage_id, ui.description_box.get("1.0", "end"))
     
     messagebox.showinfo("Service Entered", "Service has been entered")
     ui._show_main_screen()
@@ -147,8 +150,8 @@ def add_reoccurring_services(ui):
     
     #put this in a try in case something goes wrong 
     
-    car_id = ui.cars[ui.car_index]["CarID"]
-    mileage_id = ui.db.add_mileage(ui.cars[ui.car_index]["CarID"], ui.mileage_var.get(), ui.date_var.get())
+    car_id = ui.cars[ui.car_index]["CarId"]
+    mileage_id = ui.db.add_mileage(ui.cars[ui.car_index]["CarId"], ui.mileage_var.get(), ui.date_var.get())
     
     for ser_id in selected_ids:
         ser = ui.db.get_recurring_services_by_ID(ser_id)

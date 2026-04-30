@@ -80,7 +80,7 @@ def add_mileage(ui):
     if not validate_inputs(ui):
         return
     
-    mileageID = ui.db.add_mileage(ui.cars[ui.car_combo.current()]["CarID"],
+    mileageID = ui.db.add_mileage(ui.cars[ui.car_combo.current()]["CarId"],
                         ui.mileage_var.get(),
                         ui.date_var.get())
     message = "Your mileage has been entered"
@@ -113,7 +113,7 @@ def validate_inputs(ui):
         messagebox.showerror("Input Error", "Mileage can not be blank")
         return False
     
-    last_reading = ui.db.get_mileage_by_ID(ui.cars[ui.car_combo.current()]["CarID"])
+    last_reading = ui.db.get_mileage_by_ID(ui.cars[ui.car_combo.current()]["CarId"])
     if last_reading is not None:
         if int(ui.mileage_var.get()) < last_reading["OdometerReading"] :
             messagebox.showerror("Input Error", "Mileage must be bigger than less reading")
