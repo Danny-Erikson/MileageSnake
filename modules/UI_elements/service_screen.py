@@ -4,6 +4,9 @@ import datetime as dt
 
 from ui_padding import *
 
+#NOTE: self.cars is called at launch in tkinker_UI
+
+#* Builders
 
 def show_service_screen(ui):
     #*Check for cars to avoid error
@@ -12,7 +15,7 @@ def show_service_screen(ui):
         return
     
     #* Initialize Frame
-    ui._clear_frame()
+    ui.clear_frame()
     ui.master.columnconfigure(0, weight=1)
     ui.master.columnconfigure(1, weight=1)
     
@@ -88,7 +91,7 @@ def build_general_service(ui):
     
     ui.description_box = tk.Text(ui.service_editor, width=40, height=10)
     ui.description_box.grid(row=1, column=2, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
-
+    
     submit_button = ttk.Button(ui.service_editor, text="Submit", command= lambda: add_one_service(ui))
     submit_button.grid(row=2, column=1, columnspan=2, padx=ENTRY_X, pady=ENTRY_Y)
 
@@ -120,8 +123,10 @@ def build_reoccurring_service(ui):
         ui.note_entries[service_id].grid(row=row_count, column=2, ipadx=75, sticky="w")
         
         row_count += 1
-
+    
     tk.Button(ui.service_editor, text="Submit", command=lambda: add_reoccurring_services(ui)).grid(row=row_count + 1, columnspan=4)
+
+#* Helpers
 
 def validate_inputs(ui):
     if ui.mileage_var.get() == "":
@@ -148,10 +153,6 @@ def add_one_service(ui):
     if not validate_inputs(ui):
         return
     
-    confirmed = messagebox.askyesno("Confirm Service Details", f'Enter {ui.name_var.get()} at {int(ui.mileage_var.get()):,} miles on {ui.date_var.get()}\nwith a description of "{ui.description_box.get("1.0", "end")}"')
-    if not confirmed:
-        return
-    
     mileage_check = ui.db.mileage_match(ui.cars[ui.car_index]["CarId"], ui.mileage_var.get(), ui.date_var.get())
     if mileage_check != None:
         mileage_id = mileage_check["MileageId"]
@@ -170,15 +171,6 @@ def add_reoccurring_services(ui):
     selected_ids = [sid for sid, var in ui.selected.items() if var.get()]
     if selected_ids == []:
         messagebox.showerror("Input Error", "Please select services to enter")
-        return
-    
-    message = f"Enter Services at {int(ui.mileage_var.get()):,} on {ui.date_var.get()}\n"
-    for ser_id in selected_ids:
-        s = ui.db.get_recurring_services_by_ID(ser_id)
-        message += f"{s["Name"]}\n"
-    
-    confirmed = messagebox.askyesno("Confirm Service Details", f"{message[:-1]}")
-    if not confirmed:
         return
     
     car_id = ui.cars[ui.car_index]["CarId"]
@@ -206,4 +198,3 @@ def add_reoccurring_services(ui):
     
     messagebox.showinfo("Service Entered", "Service has been entered")
     ui._show_main_screen()
-

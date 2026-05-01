@@ -9,7 +9,7 @@ from ui_padding import *
 
 def show_car_manager(ui):
     #* Initialize Frame
-    ui._clear_frame()
+    ui.clear_frame()
     ui.master.columnconfigure(0, weight=1)
     ui.master.columnconfigure(1, weight=1)
     ui.master.columnconfigure(2, weight=1)
@@ -57,7 +57,7 @@ def show_car_manager(ui):
 
 def show_car_form(ui, editing=False, carID=None):
     #* Initialize frame and Tk variables
-    ui._clear_frame()
+    ui.clear_frame()
     ui.master.columnconfigure(0, weight=1)
     ui.master.columnconfigure(1, weight=1)
     

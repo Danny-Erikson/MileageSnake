@@ -5,7 +5,7 @@ from ui_padding import *
 
 def show_default_services_editor(ui):
     #* Initialize Frame
-    ui._clear_frame()
+    ui.clear_frame()
     ui.master.columnconfigure(0, weight=1)
     ui.master.columnconfigure(1, weight=1)
     ui.master.columnconfigure(2, weight=1)
@@ -20,10 +20,9 @@ def show_default_services_editor(ui):
     top_text.grid(row=1, column=0, columnspan=5, padx=10, pady=10)
     
     #*Non Optional Table
-    
     auto_service = ui.db.get_auto_temp_services()
     
-    #* Build Table
+    #* Building Table
     row_count = 2
     for service in auto_service:
         edit_button = tk.Button(
@@ -51,14 +50,14 @@ def show_default_services_editor(ui):
         
         row_count += 1
     
-    #Optional table here
-    
+    #*Optional table
     row_count += 1
     bottom_text = tk.Label(ui.master, text="Below are the services that the user is asked if they want to add.")
     bottom_text.grid(row=row_count, column=0, columnspan=5, padx=10, pady=10)
     
     asking_service = ui.db.get_asking_temp_services()
     
+    #* Building Table
     row_count += 1
     for service in asking_service:
         edit_button = tk.Button(
@@ -93,8 +92,8 @@ def show_default_services_editor(ui):
     go_back.grid(row=row_count + 1, column=0, columnspan=5, padx=BUTTON_X, pady=BUTTON_Y)
 
 def show_service_form(ui, templateId=None, editing=False):
-    #* Initialize frame and Tk variables
-    ui._clear_frame()
+    #* Initialize frame
+    ui.clear_frame()
     ui.master.columnconfigure(0, weight=1)
     ui.master.columnconfigure(1, weight=1)
     ui.master.columnconfigure(2, weight=1)

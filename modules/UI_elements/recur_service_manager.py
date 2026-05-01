@@ -14,7 +14,7 @@ def show_recur_service_manager(ui):
         return
     
     #* Initialize Frame
-    ui._clear_frame()
+    ui.clear_frame()
     ui.master.columnconfigure(0, weight=1)
     ui.master.columnconfigure(1, weight=1)
     ui.master.columnconfigure(2, weight=1)
@@ -100,7 +100,7 @@ def on_car_change(ui):
 
 def show_service_form(ui, serviceID=None, editing=False):
     #* Initialize frame and Tk variables
-    ui._clear_frame()
+    ui.clear_frame()
     ui.master.columnconfigure(0, weight=1)
     ui.master.columnconfigure(1, weight=1)
     ui.master.columnconfigure(2, weight=1)
@@ -130,7 +130,6 @@ def show_service_form(ui, serviceID=None, editing=False):
         
         submit_button = ttk.Button(ui.master, text="Submit", command=lambda serviceID=service["ServiceId"]:edit_service(ui, serviceID))
         submit_button.grid(row= 7, columnspan=3, padx=BUTTON_X, pady=BUTTON_Y)
-    
     else:
         title_label = ttk.Label(ui.master, text="Add a New Service", font=("Arial", 16))
         title_label.grid(row=0, column=0, columnspan=3, pady=TITLE_Y)
@@ -201,7 +200,6 @@ def add_service(ui):
         sanitized_inputs = (*safe_inputs, ui.time_value_var.get(), ui.time_unit_var.get())
     
     ui.db.add_recurring_services(*sanitized_inputs)
-    
     show_recur_service_manager(ui)
 
 def edit_service(ui, serviceID):
@@ -217,7 +215,6 @@ def edit_service(ui, serviceID):
         sanitized_inputs = (*safe_inputs, ui.time_value_var.get(), ui.time_unit_var.get())
     
     ui.db.update_recurring_service(*sanitized_inputs, ui.note_var.get(), serviceID)
-    
     show_recur_service_manager(ui)
 
 def remove_service(ui, serviceID):

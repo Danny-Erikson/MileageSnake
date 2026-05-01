@@ -14,7 +14,7 @@ def show_mileage_screen(ui):
         return
     
     #* Initialize Frame
-    ui._clear_frame()
+    ui.clear_frame()
     ui.master.columnconfigure(0, weight=1)
     ui.master.columnconfigure(1, weight=1)
     
@@ -26,10 +26,10 @@ def show_mileage_screen(ui):
     ui.gallons_bought_var = tk.StringVar()
     ui.full_up_var = tk.BooleanVar(value=True)
     
+    #* Mileage Area
     title_label = tk.Label(ui.master, text="Enter Mileage", font=("Arial", 16))
     title_label.grid(row=0, column=0, columnspan=2, pady=TITLE_Y)
     
-    #* Mileage Area
     car_label = ttk.Label(ui.master, text="Car: ")
     car_label.grid(row=1, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
     
@@ -82,11 +82,12 @@ def add_mileage(ui):
     if not validate_inputs(ui):
         return
     
-    mileageID = ui.db.add_mileage(ui.cars[ui.car_combo.current()]["CarId"],
-                        ui.mileage_var.get(),
-                        ui.date_var.get())
+    mileageID = ui.db.add_mileage(
+        ui.cars[ui.car_combo.current()]["CarId"],
+        ui.mileage_var.get(),
+        ui.date_var.get())
     message = "Your mileage has been entered"
-
+    
     if ui.mpg_var.get() == True:
         ui.db.add_fuel(mileageID,
                     ui.gallons_bought_var.get(),
@@ -139,4 +140,3 @@ def validate_inputs(ui):
             return False
     
     return True
-

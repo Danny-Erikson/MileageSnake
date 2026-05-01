@@ -34,7 +34,7 @@ class Service_UI:
     
     #* Builders
     def _show_main_screen(self):
-        self._clear_frame()
+        self.clear_frame()
         self.master.columnconfigure(0, weight=1)
         self.master.columnconfigure(1, weight=1)
         
@@ -55,7 +55,7 @@ class Service_UI:
     
     def show_advanced_area(self):
         #* Initialize Frame
-        self._clear_frame()
+        self.clear_frame()
         self.master.columnconfigure(0, weight=1)
         self.master.columnconfigure(1, weight=1)
         
@@ -81,15 +81,6 @@ class Service_UI:
     def _on_close(self):
         self.master.destroy()
     
-    def _clear_frame(self):
-        #clears elements
-        for widget in self.master.winfo_children():
-            widget.destroy()
-        # Reset column/row weight
-        for i in range(10):
-            self.master.columnconfigure(i, weight=0)
-            self.master.rowconfigure(i, weight=0)
-    
     def _only_numbers(self, new_value):
         return new_value.isdigit() or new_value == ""
     
@@ -101,6 +92,15 @@ class Service_UI:
             return True
         except ValueError:
             return False
+    
+    def clear_frame(self):
+        #clears elements
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        # Reset column/row weight
+        for i in range(10):
+            self.master.columnconfigure(i, weight=0)
+            self.master.rowconfigure(i, weight=0)
     
     def is_valid_date(self, date_str):
         try:

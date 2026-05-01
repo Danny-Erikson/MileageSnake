@@ -133,8 +133,7 @@ class DB:
     
     #* Cars
     def add_car(self, vin, plate, year, make, model, trim):
-        car_id = self.execute(
-            """
+        car_id = self.execute("""
             INSERT INTO Cars (VINNumber, LicensePlate, Year, Make, Model, Trim)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
@@ -158,8 +157,7 @@ class DB:
         return self.fetchone("SELECT * FROM Cars WHERE CarId = ?", (carID,))
     
     def update_car(self, vin, plate, year, make, model, trim, car_id):
-        self.execute(
-            """
+        self.execute("""
             UPDATE Cars
             SET VINNumber = ?, LicensePlate = ?, Year = ?, Make = ?, Model = ?, Trim = ?
             WHERE CarId = ?
@@ -172,8 +170,7 @@ class DB:
     
     #* Mileage
     def add_mileage(self, carID, reading, date):
-        mileageID = self.execute(
-            """
+        mileageID = self.execute("""
             INSERT INTO Mileage (CarId, OdometerReading, Date)
             VALUES (?, ?, ?)
             """,
@@ -181,25 +178,23 @@ class DB:
         )
         return mileageID
     
-    def get_mileage_by_ID(self, carID):
-        return self.fetchone("SELECT * FROM Mileage WHERE CarId = ?", (carID,))
-    
     def add_fuel(self, mileageID, gallonsBrought, totalCost, fullFillUp):
-        self.execute(
-            """
+        self.execute("""
             INSERT INTO FuelLog (MileageID, GallonsBought, TotalCost, FullFillUp)
             VALUES (?, ?, ?, ?)
             """,
             (mileageID, gallonsBrought, totalCost, fullFillUp)
         )
     
+    def get_mileage_by_ID(self, carID):
+        return self.fetchone("SELECT * FROM Mileage WHERE CarId = ?", (carID,))
+    
     def mileage_match(self, carId, reading, date):
         return self.fetchone("SELECT * FROM Mileage WHERE CarId = ? AND OdometerReading = ? AND Date = ?", (carId, reading, date))
     
     #* Recurring Services
     def add_recurring_services(self, name, carID, dueMileage, intervalValue, intervalUnit, autoNote):
-        self.execute(
-            """
+        self.execute("""
             INSERT INTO RecurringServices (Name, CarId, DueMileage, IntervalValue, IntervalUnit, AutoNote)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
@@ -210,16 +205,17 @@ class DB:
         return self.fetchone("SELECT * FROM RecurringServices WHERE ServiceId = ?", (serviceID,))
     
     def get_recurring_services_by_carID(self, carID):
-        return self.fetchall(("""SELECT *
-                                FROM RecurringServices
-                                WHERE CarId = ?
-                                ORDER BY 
-                                DueMileage ASC;"""),
-                                (carID,))
+        return self.fetchall(("""
+        SELECT *
+        FROM RecurringServices
+        WHERE CarId = ?
+        ORDER BY 
+        DueMileage ASC;"""),
+        (carID,)
+        )
     
     def update_recurring_service(self, name, dueMileage, intervalValue, intervalUnit, autoNote, service_id):
-        self.execute(
-            """
+        self.execute("""
             UPDATE RecurringServices
             SET Name = ?, DueMileage = ?, IntervalValue = ?, intervalUnit = ?, AutoNote = ?
             WHERE ServiceId = ?
@@ -227,12 +223,8 @@ class DB:
             (name, dueMileage, intervalValue, intervalUnit, autoNote, service_id)
         )
     
-    def remove_recurring_service(self, service_id):
-        self.execute("DELETE FROM RecurringServices WHERE ServiceId = ?", (service_id,))
-    
     def update_auto_note_by_id(self, note, service_id):
-        self.execute(
-            """
+        self.execute("""
             UPDATE RecurringServices
             SET AutoNote = ?
             WHERE ServiceId = ?
@@ -240,10 +232,12 @@ class DB:
             (note, service_id)
         )
     
+    def remove_recurring_service(self, service_id):
+        self.execute("DELETE FROM RecurringServices WHERE ServiceId = ?", (service_id,))
+    
     #* Service Templates
     def add_services_template(self, name, dueMileage, intervalValue, intervalUnit, isOptional, question):
-        self.execute(
-            """
+        self.execute("""
             INSERT INTO ServiceTemplates (Name, DueMileage, IntervalValue, IntervalUnit, IsOptional, Question)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
@@ -260,22 +254,20 @@ class DB:
         return self.fetchone("SELECT * FROM ServiceTemplates  WHERE TemplateId = ?", (templateId,))
     
     def update_services_template(self, name, dueMileage, intervalValue, intervalUnit, isOptional, question, templateId):
-            self.execute(
-                """
-                UPDATE ServiceTemplates
-                SET Name = ?, DueMileage = ?, IntervalValue = ?, intervalUnit = ?, IsOptional = ?, Question = ?
-                WHERE TemplateId = ?
-                """,
-                (name, dueMileage, intervalValue, intervalUnit, isOptional, question, templateId)
-            )
+        self.execute("""
+            UPDATE ServiceTemplates
+            SET Name = ?, DueMileage = ?, IntervalValue = ?, intervalUnit = ?, IsOptional = ?, Question = ?
+            WHERE TemplateId = ?
+            """,
+            (name, dueMileage, intervalValue, intervalUnit, isOptional, question, templateId)
+        )
     
     def remove_services_template(self, templateId):
         self.execute("DELETE FROM ServiceTemplates WHERE TemplateId = ?", (templateId,))
     
     #* Service Done
     def add_service(self, name, carId, serviceId, mileageId, note):
-        self.execute(
-            """
+        self.execute("""
             INSERT INTO ServicesDone (Name, CarId, ServiceId, MileageId, Note)
             VALUES (?, ?, ?, ?, ?)
             """,
