@@ -148,7 +148,7 @@ def add_one_service(ui):
     if not validate_inputs(ui):
         return
     
-    confirmed = messagebox.askyesno("Confirm Service Details", f'Enter {ui.name_var.get()} at {ui.mileage_var.get()} miles\nwith a description of "{ui.description_box.get("1.0", "end")}"')
+    confirmed = messagebox.askyesno("Confirm Service Details", f'Enter {ui.name_var.get()} at {int(ui.mileage_var.get()):,} miles on {ui.date_var.get()}\nwith a description of "{ui.description_box.get("1.0", "end")}"')
     if not confirmed:
         return
     
@@ -172,7 +172,7 @@ def add_reoccurring_services(ui):
         messagebox.showerror("Input Error", "Please select services to enter")
         return
     
-    message = f"Enter Services at {ui.mileage_var.get()}\n"
+    message = f"Enter Services at {int(ui.mileage_var.get()):,} on {ui.date_var.get()}\n"
     for ser_id in selected_ids:
         s = ui.db.get_recurring_services_by_ID(ser_id)
         message += f"{s["Name"]}\n"

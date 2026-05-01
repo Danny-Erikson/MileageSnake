@@ -8,6 +8,11 @@ from ui_padding import *
 
 #* Mileage
 def show_mileage_screen(ui):
+    #*Check for cars to avoid error
+    if ui.cars == []:
+        ui.no_id_reroute()
+        return
+    
     #* Initialize Frame
     ui._clear_frame()
     ui.master.columnconfigure(0, weight=1)
