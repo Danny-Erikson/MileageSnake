@@ -4,7 +4,6 @@ import datetime as dt
 
 from ui_padding import *
 
-#TODO: FIXME Look for mileage id if mileage == mileage and date == date in db
 
 def show_service_screen(ui):
     #* Initialize Frame
@@ -148,7 +147,11 @@ def add_one_service(ui):
     if not confirmed:
         return
     
-    mileage_id = ui.db.add_mileage(ui.cars[ui.car_index]["CarId"], ui.mileage_var.get(), ui.date_var.get())
+    mileage_check = ui.db.mileage_match(ui.cars[ui.car_index]["CarId"], ui.mileage_var.get(), ui.date_var.get())
+    if mileage_check != None:
+        mileage_id = mileage_check["MileageId"]
+    else:
+        mileage_id = ui.db.add_mileage(ui.cars[ui.car_index]["CarId"], ui.mileage_var.get(), ui.date_var.get())
     
     ui.db.add_service(ui.name_var.get(), ui.cars[ui.car_index]["CarId"], None, mileage_id, ui.description_box.get("1.0", "end"))
     
@@ -174,7 +177,12 @@ def add_reoccurring_services(ui):
         return
     
     car_id = ui.cars[ui.car_index]["CarId"]
-    mileage_id = ui.db.add_mileage(ui.cars[ui.car_index]["CarId"], ui.mileage_var.get(), ui.date_var.get())
+    
+    mileage_check = ui.db.mileage_match(car_id, ui.mileage_var.get(), ui.date_var.get())
+    if mileage_check != None:
+        mileage_id = mileage_check["MileageId"]
+    else:
+        mileage_id = ui.db.add_mileage(car_id, ui.mileage_var.get(), ui.date_var.get())
     
     for ser_id in selected_ids:
         ser = ui.db.get_recurring_services_by_ID(ser_id)

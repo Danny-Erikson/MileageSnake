@@ -186,6 +186,9 @@ class DB:
             (mileageID, gallonsBrought, totalCost, fullFillUp)
         )
     
+    def mileage_match(self, carId, reading, date):
+        return self.fetchone("SELECT * FROM Mileage WHERE CarId = ? AND OdometerReading = ? AND Date = ?", (carId, reading, date))
+    
     #* Recurring Services
     def add_recurring_services(self, name, carID, dueMileage, intervalValue, intervalUnit, autoNote):
         self.execute(
@@ -197,7 +200,7 @@ class DB:
         )
     
     def get_recurring_services_by_ID(self, serviceID):
-        return self.fetchone("SELECT * FROM RecurringServices WHERE serviceID = ?", (serviceID,))
+        return self.fetchone("SELECT * FROM RecurringServices WHERE ServiceId = ?", (serviceID,))
     
     def get_recurring_services_by_carID(self, carID):
         return self.fetchall(("""SELECT *

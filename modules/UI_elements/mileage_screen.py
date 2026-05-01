@@ -6,10 +6,7 @@ from ui_padding import *
 
 #NOTE: self.cars is called at launch in tkinker_UI
 
-#TODO: UPDATE with a cal from tkinker
-
 #* Mileage
-
 def show_mileage_screen(ui):
     #* Initialize Frame
     ui._clear_frame()
@@ -137,3 +134,4 @@ def validate_inputs(ui):
             return False
     
     return True
+
