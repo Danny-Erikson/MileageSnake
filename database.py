@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS RecurringServices(
     DueMileage INTEGER,
     IntervalValue INTEGER,
     IntervalUnit TEXT CHECK (IntervalUnit IN ('days', 'months', 'years')),
+    AutoNote TEXT,
     FOREIGN KEY (CarId) REFERENCES Cars(CarId),
 
     CHECK (
@@ -186,13 +187,13 @@ class DB:
         )
     
     #* Recurring Services
-    def add_recurring_services(self, name, carID, dueMileage, intervalValue, intervalUnit):
+    def add_recurring_services(self, name, carID, dueMileage, intervalValue, intervalUnit, autoNote):
         self.execute(
             """
-            INSERT INTO RecurringServices (Name, CarId, DueMileage, IntervalValue, IntervalUnit)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO RecurringServices (Name, CarId, DueMileage, IntervalValue, IntervalUnit, AutoNote)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (name, carID, dueMileage , intervalValue, intervalUnit)
+            (name, carID, dueMileage , intervalValue, intervalUnit, autoNote)
         )
     
     def get_recurring_services_by_ID(self, serviceID):
@@ -206,18 +207,28 @@ class DB:
                                 DueMileage ASC;"""),
                                 (carID,))
     
-    def update_recurring_service(self, name, dueMileage, intervalValue, intervalUnit,  service_id):
-            self.execute(
-                """
-                UPDATE RecurringServices
-                SET Name = ?, DueMileage = ?, IntervalValue = ?, intervalUnit = ?
-                WHERE ServiceId = ?
-                """,
-                (name, dueMileage, intervalValue, intervalUnit, service_id)
-            )
+    def update_recurring_service(self, name, dueMileage, intervalValue, intervalUnit, autoNote, service_id):
+        self.execute(
+            """
+            UPDATE RecurringServices
+            SET Name = ?, DueMileage = ?, IntervalValue = ?, intervalUnit = ?, AutoNote = ?
+            WHERE ServiceId = ?
+            """,
+            (name, dueMileage, intervalValue, intervalUnit, autoNote, service_id)
+        )
     
     def remove_recurring_service(self, service_id):
         self.execute("DELETE FROM RecurringServices WHERE ServiceId = ?", (service_id,))
+    
+    def update_auto_note_by_id(self, note, service_id):
+        self.execute(
+            """
+            UPDATE RecurringServices
+            SET AutoNote = ?
+            WHERE ServiceId = ?
+            """,
+            (note, service_id)
+        )
     
     #* Service Templates
     def add_services_template(self, name, dueMileage, intervalValue, intervalUnit, isOptional, question):

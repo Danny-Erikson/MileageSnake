@@ -4,6 +4,7 @@ from tkinter import ttk, messagebox
 from ui_padding import *
 
 #* Car Manager
+#FIXME: When we remove a car we need to clean up the DBS 
 
 #NOTE: self.cars is called at launch in tkinker_UI and we update it as needed. This is to reduce db calls
 
@@ -168,7 +169,7 @@ def add_new_car(ui):
     for service in op_list:
         user_response = messagebox.askyesno("Add Service", f"{service["Question"]}?")
         if user_response:
-            ui.db.add_recurring_services(service["Name"], car_id, service["DueMileage"], service["IntervalValue"], service["IntervalUnit"])
+            ui.db.add_recurring_services(service["Name"], car_id, service["DueMileage"], service["IntervalValue"], service["IntervalUnit"], None)
     
     ui.cars = ui.db.get_all_cars()
     show_car_manager(ui)

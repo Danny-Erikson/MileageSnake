@@ -5,6 +5,7 @@ import datetime as dt
 from ui_padding import *
 
 #TODO: ADD Confirm to service entering
+#TODO: ADD Desertion to reoccurring services
 #TODO: FIXME Look for mileage id if mileage == mileage and date == date in db
 
 def show_service_screen(ui):
@@ -94,18 +95,31 @@ def build_reoccurring_service(ui):
     services = ui.db.get_recurring_services_by_carID(ui.cars[ui.car_index]["CarId"])
     
     ui.selected = {}
+    ui.notes = {}
+    ui.note_entries = {}
     row_count = 0
-    column_count = 1
+    
+    def toggle_note(service_id):
+        if ui.selected[service_id].get():
+            ui.note_entries[service_id].config(state="normal")
+        else:
+            ui.note_entries[service_id].config(state="disabled")
     
     for s in services:
-        ui.selected[s["ServiceId"]] = tk.BooleanVar()
-        tk.Checkbutton(ui.service_editor, text=s["Name"], variable=ui.selected[s["ServiceId"]]).grid(row= row_count, column= column_count, sticky="w")
-        column_count += 1
-        if column_count >= 4:
-            row_count += 1
-            column_count = 1
-    
-    tk.Button(ui.service_editor, text="Submit", command=lambda: add_reoccurring_services(ui)).grid(row= row_count + 1, columnspan= 4)
+        service_id = s["ServiceId"]
+        
+        ui.selected[service_id] = tk.BooleanVar()
+        ui.notes[service_id] = tk.StringVar()
+        ui.notes[service_id].set(f"{s["AutoNote"] or ""}")
+        
+        tk.Checkbutton(ui.service_editor, text=s["Name"], variable=ui.selected[service_id], command=lambda sid=service_id: toggle_note(sid)).grid(row=row_count, column=1, sticky="w")
+        tk.Label(ui.service_editor, text="Notes: ").grid(row=row_count, column=1, sticky="e")
+        ui.note_entries[service_id] = tk.Entry(ui.service_editor, textvariable=ui.notes[service_id], state="disabled")
+        ui.note_entries[service_id].grid(row=row_count, column=2, ipadx=75, sticky="w")
+        
+        row_count += 1
+
+    tk.Button(ui.service_editor, text="Submit", command=lambda: add_reoccurring_services(ui)).grid(row=row_count + 1, columnspan=4)
 
 def validate_inputs(ui):
     if ui.mileage_var.get() == "":
@@ -148,14 +162,25 @@ def add_reoccurring_services(ui):
         messagebox.showerror("Input Error", "Please select services to enter")
         return
     
-    #put this in a try in case something goes wrong 
-    
     car_id = ui.cars[ui.car_index]["CarId"]
     mileage_id = ui.db.add_mileage(ui.cars[ui.car_index]["CarId"], ui.mileage_var.get(), ui.date_var.get())
     
     for ser_id in selected_ids:
         ser = ui.db.get_recurring_services_by_ID(ser_id)
-        ui.db.add_service(ser["Name"], car_id, ser_id, mileage_id, None)
+        if ui.notes[ser_id].get() != "":
+            if ui.notes[ser_id].get() != ser["AutoNote"]:
+                update = messagebox.askquestion("Update AutoNote", f'We noticed you updated the note for "{ser["Name"]}"\nDid you want to update it from\n"{ser["AutoNote"]}"\nto\n"{ui.notes[ser_id].get()}"')
+                if update:
+                    ui.db.update_auto_note_by_id(ui.notes[ser_id].get(), ser_id)
+                    ui.db.add_service(ser["Name"], car_id, ser_id, mileage_id, ui.notes[ser_id].get())
+                else:
+                    ui.db.add_service(ser["Name"], car_id, ser_id, mileage_id, ser["AutoNote"])
+            else:
+                ui.db.add_service(ser["Name"], car_id, ser_id, mileage_id, ser["AutoNote"])
+        else:
+            ui.db.add_service(ser["Name"], car_id, ser_id, mileage_id, None)
+
+        
     
     messagebox.showinfo("Service Entered", "Service has been entered")
     ui._show_main_screen()

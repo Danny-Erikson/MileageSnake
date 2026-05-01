@@ -104,6 +104,7 @@ def show_service_form(ui, serviceID=None, editing=False):
     ui.due_mileage_var = tk.StringVar()
     ui.time_value_var = tk.StringVar()
     ui.time_unit_var = tk.StringVar()
+    ui.note_var = tk.StringVar()
     
     #* Conditional rendering
     # The editing flag is True if the user clicked the edit button to call the function
@@ -120,16 +121,17 @@ def show_service_form(ui, serviceID=None, editing=False):
         ui.due_mileage_var.set(value=service["DueMileage"] or "")
         ui.time_value_var.set(value=service["IntervalValue"] or "")
         ui.time_unit_var.set(value=service["IntervalUnit"] or "")
+        ui.note_var.set(value=service["AutoNote"] or "")
         
         submit_button = ttk.Button(ui.master, text="Submit", command=lambda serviceID=service["ServiceId"]:edit_service(ui, serviceID))
-        submit_button.grid(row= 5, columnspan=3, padx=BUTTON_X, pady=BUTTON_Y)
+        submit_button.grid(row= 7, columnspan=3, padx=BUTTON_X, pady=BUTTON_Y)
     
     else:
         title_label = ttk.Label(ui.master, text="Add a New Service", font=("Arial", 16))
         title_label.grid(row=0, column=0, columnspan=3, pady=TITLE_Y)
         
         submit_button = ttk.Button(ui.master, text="Submit", command=lambda: add_service(ui))
-        submit_button.grid(row= 5, columnspan=3, padx=BUTTON_X, pady=BUTTON_Y)
+        submit_button.grid(row= 7, columnspan=3, padx=BUTTON_X, pady=BUTTON_Y)
     
     #* Building of Shared Elements
     car_label = ttk.Label(ui.master, text=f"Service for: {ui.cars[ui.car_index]["Year"]} {ui.cars[ui.car_index]["Make"]} {ui.cars[ui.car_index]["Model"]}", font=(14))
@@ -153,8 +155,15 @@ def show_service_form(ui, serviceID=None, editing=False):
     time_combo["values"] = ["days", "months", "years"]
     time_combo.grid(row=4, column=2, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
+    notes_label = ttk.Label(ui.master, text="AutoNote:")
+    notes_label.grid(row=5, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
+    note_entry = ttk.Entry(ui.master, textvariable=ui.note_var)
+    note_entry.grid(row=5, column=1, sticky="we", padx=ENTRY_X, pady=ENTRY_Y)
+    notes_instr_label = ttk.Label(ui.master, text='AutoNote is automatically added to the service entry when entered\nI.E. if you used Valvoline oil, you could put "Used Valvoline oil')
+    notes_instr_label.grid(row=6, column=0, columnspan=3, padx=ENTRY_X, pady=ENTRY_Y)
+    
     back_button = ttk.Button(ui.master, text="Go Back", command=lambda: show_recur_service_manager(ui))
-    back_button.grid(row= 6, columnspan=3, padx=BUTTON_X, pady=BUTTON_Y)
+    back_button.grid(row= 8, columnspan=3, padx=BUTTON_X, pady=BUTTON_Y)
 
 #* Helpers
 
@@ -202,7 +211,7 @@ def edit_service(ui, serviceID):
     else:
         sanitized_inputs = (*safe_inputs, ui.time_value_var.get(), ui.time_unit_var.get())
     
-    ui.db.update_recurring_service(*sanitized_inputs, serviceID)
+    ui.db.update_recurring_service(*sanitized_inputs, ui.note_var.get(), serviceID)
     
     show_recur_service_manager(ui)
 
