@@ -8,6 +8,11 @@ from ui_padding import *
 #* Builders
 
 def show_recur_service_manager(ui):
+    #*Check for cars to avoid error
+    if ui.cars == []:
+        ui.no_id_reroute()
+        return
+    
     #* Initialize Frame
     ui._clear_frame()
     ui.master.columnconfigure(0, weight=1)

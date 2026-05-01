@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 import datetime as dt
 
@@ -31,8 +31,7 @@ class Service_UI:
         
         #Runtime
         self._show_main_screen()
-
-
+    
     #* Builders
     def _show_main_screen(self):
         self._clear_frame()
@@ -53,7 +52,7 @@ class Service_UI:
         
         advanced_button  = ttk.Button(self.master, text="Advanced Area", command=self.show_advanced_area)
         advanced_button.grid(row=2, column=1, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
-
+    
     def show_advanced_area(self):
         #* Initialize Frame
         self._clear_frame()
@@ -77,13 +76,11 @@ class Service_UI:
         #* Bottom of the screen
         go_back = tk.Button(self.master, text="Go Back", command=self._show_main_screen)
         go_back.grid(row=3, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
-
-
+    
     #* Helper functions
-
     def _on_close(self):
         self.master.destroy()
-
+    
     def _clear_frame(self):
         #clears elements
         for widget in self.master.winfo_children():
@@ -92,10 +89,10 @@ class Service_UI:
         for i in range(10):
             self.master.columnconfigure(i, weight=0)
             self.master.rowconfigure(i, weight=0)
-
+    
     def _only_numbers(self, new_value):
         return new_value.isdigit() or new_value == ""
-
+    
     def _only_floats(self, new_value):
         if new_value == "":
             return True
@@ -104,10 +101,14 @@ class Service_UI:
             return True
         except ValueError:
             return False
-
+    
     def is_valid_date(self, date_str):
         try:
             dt.datetime.strptime(date_str, "%Y-%m-%d")
             return True
         except ValueError:
             return False
+    
+    def no_id_reroute(self):
+        messagebox.showerror("No Cars Error", "Whoops!\nLooks like there are no cars in the database, we'll reroute you to the car manager to enter one")
+        show_car_manager(self)

@@ -6,6 +6,11 @@ from ui_padding import *
 
 
 def show_service_screen(ui):
+    #*Check for cars to avoid error
+    if ui.cars == []:
+        ui.no_id_reroute()
+        return
+    
     #* Initialize Frame
     ui._clear_frame()
     ui.master.columnconfigure(0, weight=1)

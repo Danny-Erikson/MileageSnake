@@ -5,7 +5,6 @@ from tkinter_UI import Service_UI
 
 def main():
 #TODO: TEST going from screen to screen with stuff on each screen with shared variables
-#FIXME: for screens that require a CarID to work, add a check 
 
     db = DB('Data/Cars.db')
     root = tk.Tk()
