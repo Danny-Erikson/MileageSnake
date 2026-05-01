@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS Mileage (
     OdometerReading INT NOT NULL,
     Date TEXT NOT NULL,
     FOREIGN KEY (CarId) REFERENCES Cars(CarId)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS FuelLog (
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS FuelLog (
     TotalCost REAL NOT NULL,
     FullFillUp INTEGER NOT NULL DEFAULT 1,
     FOREIGN KEY (MileageId) REFERENCES Mileage(MileageId)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS ServiceTemplates (
@@ -47,7 +49,8 @@ CREATE TABLE IF NOT EXISTS RecurringServices(
     IntervalValue INTEGER,
     IntervalUnit TEXT CHECK (IntervalUnit IN ('days', 'months', 'years')),
     AutoNote TEXT,
-    FOREIGN KEY (CarId) REFERENCES Cars(CarId),
+    FOREIGN KEY (CarId) REFERENCES Cars(CarId)
+    ON DELETE CASCADE,
 
     CHECK (
         DueMileage IS NOT NULL
@@ -67,9 +70,12 @@ CREATE TABLE IF NOT EXISTS ServicesDone(
     ServiceId INT,
     MileageId INT,
     Note TEXT,
-    FOREIGN KEY (CarId) REFERENCES Cars(CarId),
-    FOREIGN KEY (ServiceId) REFERENCES RecurringServices(ServiceId),
+    FOREIGN KEY (CarId) REFERENCES Cars(CarId)
+    ON DELETE CASCADE,
+    FOREIGN KEY (ServiceId) REFERENCES RecurringServices(ServiceId)
+    ON DELETE CASCADE,
     FOREIGN KEY (MileageId) REFERENCES Mileage(MileageId)
+    ON DELETE CASCADE
 );
 """
 
@@ -81,6 +87,7 @@ class DB:
         db_path.parent.mkdir(parents=True, exist_ok=True)
         
         self.conn = sqlite3.connect(db_path)
+        self.conn.execute("PRAGMA foreign_keys = ON")
         self.conn.row_factory = sqlite3.Row
         
         self.conn.executescript(SCHEMA)

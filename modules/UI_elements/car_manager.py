@@ -4,7 +4,6 @@ from tkinter import ttk, messagebox
 from ui_padding import *
 
 #* Car Manager
-#FIXME: When we remove a car we need to clean up the DBS 
 
 #NOTE: self.cars is called at launch in tkinker_UI and we update it as needed. This is to reduce db calls
 
