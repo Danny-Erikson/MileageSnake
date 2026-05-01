@@ -5,7 +5,6 @@ import datetime as dt
 from ui_padding import *
 
 #TODO: ADD Confirm to service entering
-#TODO: ADD Desertion to reoccurring services
 #TODO: FIXME Look for mileage id if mileage == mileage and date == date in db
 
 def show_service_screen(ui):
@@ -81,7 +80,7 @@ def build_general_service(ui):
     name_entry = ttk.Entry(ui.service_editor, textvariable=ui.name_var)
     name_entry.grid(row=0, column=2, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
-    description_label = tk.Label(ui.service_editor, text="Description:")
+    description_label = tk.Label(ui.service_editor, text="Note:")
     description_label.grid(row=1, column=1, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
     
     ui.description_box = tk.Text(ui.service_editor, width=40, height=10)

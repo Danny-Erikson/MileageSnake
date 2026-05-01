@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS ServicesDone(
     CarId INT,
     ServiceId INT,
     MileageId INT,
-    Description TEXT,
+    Note TEXT,
     FOREIGN KEY (CarId) REFERENCES Cars(CarId),
     FOREIGN KEY (ServiceId) REFERENCES RecurringServices(ServiceId),
     FOREIGN KEY (MileageId) REFERENCES Mileage(MileageId)
@@ -263,11 +263,11 @@ class DB:
         self.execute("DELETE FROM ServiceTemplates WHERE TemplateId = ?", (templateId,))
     
     #* Service Done
-    def add_service(self, name, carId, serviceId, mileageId, description):
+    def add_service(self, name, carId, serviceId, mileageId, note):
         self.execute(
             """
-            INSERT INTO ServicesDone (Name, CarId, ServiceId, MileageId, Description)
+            INSERT INTO ServicesDone (Name, CarId, ServiceId, MileageId, Note)
             VALUES (?, ?, ?, ?, ?)
             """,
-            (name, carId, serviceId, mileageId, description)
+            (name, carId, serviceId, mileageId, note)
         )
