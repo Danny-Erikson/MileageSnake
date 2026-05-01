@@ -4,7 +4,6 @@ import datetime as dt
 
 from ui_padding import *
 
-#TODO: ADD Confirm to service entering
 #TODO: FIXME Look for mileage id if mileage == mileage and date == date in db
 
 def show_service_screen(ui):
@@ -145,6 +144,10 @@ def add_one_service(ui):
     if not validate_inputs(ui):
         return
     
+    confirmed = messagebox.askyesno("Confirm Service Details", f'Enter {ui.name_var.get()} at {ui.mileage_var.get()} miles\nwith a description of "{ui.description_box.get("1.0", "end")}"')
+    if not confirmed:
+        return
+    
     mileage_id = ui.db.add_mileage(ui.cars[ui.car_index]["CarId"], ui.mileage_var.get(), ui.date_var.get())
     
     ui.db.add_service(ui.name_var.get(), ui.cars[ui.car_index]["CarId"], None, mileage_id, ui.description_box.get("1.0", "end"))
@@ -159,6 +162,15 @@ def add_reoccurring_services(ui):
     selected_ids = [sid for sid, var in ui.selected.items() if var.get()]
     if selected_ids == []:
         messagebox.showerror("Input Error", "Please select services to enter")
+        return
+    
+    message = f"Enter Services at {ui.mileage_var.get()}\n"
+    for ser_id in selected_ids:
+        s = ui.db.get_recurring_services_by_ID(ser_id)
+        message += f"{s["Name"]}\n"
+    
+    confirmed = messagebox.askyesno("Confirm Service Details", f"{message[:-1]}")
+    if not confirmed:
         return
     
     car_id = ui.cars[ui.car_index]["CarId"]
@@ -178,8 +190,7 @@ def add_reoccurring_services(ui):
                 ui.db.add_service(ser["Name"], car_id, ser_id, mileage_id, ser["AutoNote"])
         else:
             ui.db.add_service(ser["Name"], car_id, ser_id, mileage_id, None)
-
-        
     
     messagebox.showinfo("Service Entered", "Service has been entered")
     ui._show_main_screen()
+
