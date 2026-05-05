@@ -63,9 +63,9 @@ def show_service_screen(ui):
     ui.service_editor.columnconfigure(1, weight=1)
     ui.service_editor.columnconfigure(2, weight=1)
     ui.service_editor.columnconfigure(3, weight=1)
-
+    
     build_service_editor(ui)
-
+    
     back_button = ttk.Button(ui.master, text="Go Back", command=ui._show_main_screen)
     back_button.grid(row=9, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
 

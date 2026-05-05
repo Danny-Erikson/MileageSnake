@@ -12,6 +12,8 @@ from modules.UI_elements.car_manager import show_car_manager
 from modules.UI_elements.recur_service_manager import show_recur_service_manager
 from modules.UI_elements.default_services_editor import show_default_services_editor
 
+from modules.UI_elements.reports.due_services import show_due_service_config
+
 
 class Service_UI:
     def __init__(self, master, db):
@@ -47,11 +49,38 @@ class Service_UI:
         service_button = ttk.Button(self.master, text="Service Entering", command=lambda: show_service_screen(self))
         service_button.grid(row=1, column=1, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
         
-        gen_report = ttk.Button(self.master, text="Generate Reports")
+        gen_report = ttk.Button(self.master, text="Generate Reports", command=self.show_reports_screen)
         gen_report.grid(row=2, column=0, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
         
         advanced_button  = ttk.Button(self.master, text="Advanced Area", command=self.show_advanced_area)
         advanced_button.grid(row=2, column=1, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
+    
+    def show_reports_screen(self):
+        #* Initialize Frame
+        self.clear_frame()
+        self.master.columnconfigure(0, weight=1)
+        self.master.columnconfigure(1, weight=1)
+        
+        #* Top of the Screen
+        title_label = tk.Label(self.master, text="Reports", font=("Arial", 16))
+        title_label.grid(row=0, column=0, columnspan=2, pady=TITLE_Y)
+        
+        #* Middle of the screen
+        due_ser_button = ttk.Button(self.master, text="Due Service List", command=lambda: show_due_service_config(self))
+        due_ser_button.grid(row=1, column=0, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
+        
+        done_ser_button = ttk.Button(self.master, text="Service Done Report", command="")
+        done_ser_button.grid(row=1, column=1, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
+        
+        MPG_report_button = ttk.Button(self.master, text="MPG Report", command="")
+        MPG_report_button.grid(row=2, column=0, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
+        
+        mileage_report_button = ttk.Button(self.master, text="Mileage Report", command="")
+        mileage_report_button.grid(row=2, column=1, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
+        
+        #* Bottom of the screen
+        go_back = tk.Button(self.master, text="Go Back", command=self._show_main_screen)
+        go_back.grid(row=3, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
     
     def show_advanced_area(self):
         #* Initialize Frame
