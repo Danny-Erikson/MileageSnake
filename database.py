@@ -192,6 +192,33 @@ class DB:
     def mileage_match(self, carId, reading, date):
         return self.fetchone("SELECT * FROM Mileage WHERE CarId = ? AND OdometerReading = ? AND Date = ?", (carId, reading, date))
     
+    def get_recent_mileage_by_car(self, car_id):
+        return self.fetchall("""
+            SELECT OdometerReading, Date
+            FROM Mileage
+            WHERE CarId = ?
+            AND Date >= date('now', '-6 months')
+            
+            UNION ALL
+            
+            SELECT *
+            FROM (
+                SELECT OdometerReading, Date
+                FROM Mileage
+                WHERE CarId = ?
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM Mileage
+                    WHERE CarId = ?
+                    AND Date >= date('now', '-6 months')
+                )
+                ORDER BY Date DESC
+                LIMIT 6
+            )
+            ORDER BY Date ASC;
+        """,
+        (car_id, car_id, car_id))
+    
     #* Recurring Services
     def add_recurring_services(self, name, carID, dueMileage, intervalValue, intervalUnit, autoNote):
         self.execute("""
@@ -273,3 +300,30 @@ class DB:
             """,
             (name, carId, serviceId, mileageId, note)
         )
+    
+    def get_services_done_by_carID(self, car_id):
+        return self.fetchall(("""
+        SELECT *
+        FROM ServicesDone
+        WHERE CarId = ?
+        """),
+        (car_id,)
+        )
+    
+    def find_last_service_done(self, service_id):
+        #I fear this is not going to be the messiest join in this app
+        return self.fetchone("""
+            SELECT 
+                sd.Name,
+                rs.DueMileage AS MileageInterval,
+                rs.IntervalValue as DateValue,
+                rs.IntervalUnit as DateUnit,
+                m.Date AS ServiceDate,
+                m.OdometerReading AS ServiceMileage
+            FROM ServicesDone sd
+            LEFT JOIN RecurringServices rs ON sd.ServiceId = rs.ServiceId
+            LEFT JOIN Mileage m ON sd.MileageId = m.MileageId
+            WHERE sd.ServiceId = ?
+            ORDER BY m.Date DESC, m.OdometerReading DESC
+            LIMIT 1;
+        """, (service_id,))

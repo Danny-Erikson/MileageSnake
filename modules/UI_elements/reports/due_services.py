@@ -1,10 +1,15 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
+
+from modules.Number_crunchers.calculate_mileage_pairs import calculate_mileage_pairs
+from modules.Number_crunchers.mileage_per_day import calculate_mileage_per_day
+from modules.Number_crunchers.prep_services_for_export import prep_services_for_export
 
 from ui_padding import *
 
 #NOTE: self.cars is called at launch in tkinker_UI and we update it as needed. This is to reduce db calls
 
+#* Builders
 def show_due_service_config(ui):
     #* Initialize Frame
     ui.clear_frame()
@@ -78,3 +83,37 @@ def build_html_options(ui):
     
     submit_button = ttk.Button(ui.option_table, text="Generate Report", command="")
     submit_button.grid(row=2, columnspan=2, padx=ENTRY_X, pady=ENTRY_Y)
+
+#* Calculation
+def calculate_re_service_data(ui, car_id):
+    #* Get avg miles per day 
+    mileage = ui.db.get_recent_mileage_by_car(car_id)
+    latest_mileage = mileage[-1]
+    mileage_pairs = calculate_mileage_pairs(mileage)
+    mileage_avgs = calculate_mileage_per_day(mileage_pairs)
+    avg_miles_per_day = round(sum(mileage_avgs) / len(mileage_avgs), 3)
+    
+    #* get re_service Data
+    services = []
+    for s in ui.db.get_recurring_services_by_carID(car_id):
+        recent = ui.db.find_last_service_done(s["ServiceId"])
+        if recent != None:
+            services.append(recent)
+    
+    data = []
+    for ser in services:
+        prepped = prep_services_for_export(ser, latest_mileage, avg_miles_per_day)
+        data.append(prepped)
+    
+    return data
+
+def excel_export(ui, car_ids):
+    pass
+    # Take a list of carids  and call calculate re data
+    # open a excel file
+    # Take list of [{car 1}}{car 2}{car 3}] and export to excel
+
+def HTML_export(ui, car_ids):
+    pass
+    # Take a list of carids  and call calculate re data
+    # Take list of [{car 1}}{car 2}{car 3}] and each to HTML
