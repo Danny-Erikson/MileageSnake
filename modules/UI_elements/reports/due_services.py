@@ -186,8 +186,8 @@ def excel_export(ui):
                 worksheet.write(row_num, 5, s["EstDate"], string_format)
                 row_num += 1
                 
-                date1 = datetime.strptime(next_ser_date, "%m/%d/%Y").date()
-                date2 = datetime.strptime(s["EstDate"], "%m/%d/%Y").date()
+                date1 = to_date(next_ser_date)
+                date2 = to_date(s["EstDate"])
                 
                 next_ser_date = date1 if abs(date1 - today) < abs(date2 - today) else date2
             
@@ -198,6 +198,12 @@ def excel_export(ui):
             worksheet.write('F2', next_ser_date.strftime("%m/%d/%Y") if next_ser_date != "12/31/8008" else "", string_format)
     messagebox.showinfo("Report Ready", "Report has Been saved")
     ui.show_reports_screen()
+
+def to_date(value):
+    if isinstance(value, date):
+        return value
+
+    return datetime.strptime(value, "%m/%d/%Y").date()
 
 def HTML_export(ui, car_ids):
     pass
