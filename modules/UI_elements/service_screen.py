@@ -80,6 +80,7 @@ def build_service_editor(ui):
         build_reoccurring_service(ui)
 
 def build_general_service(ui):
+    ui.car_index = ui.car_combo.current()
     name_label = ttk.Label(ui.service_editor, text="Name:")
     name_label.grid(row=0, column=1, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
     
@@ -115,7 +116,7 @@ def build_reoccurring_service(ui):
         
         ui.selected[service_id] = tk.BooleanVar()
         ui.notes[service_id] = tk.StringVar()
-        ui.notes[service_id].set(f"{s["AutoNote"] or ""}")
+        ui.notes[service_id].set(s["AutoNote"] or "")
         
         tk.Checkbutton(ui.service_editor, text=s["Name"], variable=ui.selected[service_id], command=lambda sid=service_id: toggle_note(sid)).grid(row=row_count, column=1, sticky="w")
         tk.Label(ui.service_editor, text="Notes: ").grid(row=row_count, column=1, sticky="e")
