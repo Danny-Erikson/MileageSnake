@@ -141,3 +141,18 @@ class Service_UI:
     def no_id_reroute(self):
         messagebox.showerror("No Cars Error", "Whoops!\nLooks like there are no cars in the database, we'll reroute you to the car manager to enter one")
         show_car_manager(self)
+    
+    def find_car_by_id(self, car_id):
+        return next((self.car for car in self.cars if car["CarId"] == car_id), None)
+    
+    @staticmethod
+    def text_color_for_bg(hex_color):
+        hex_color = hex_color.lstrip("#")
+        
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
+        
+        brightness = (r * 299 + g * 587 + b * 114) / 1000
+        
+        return "black" if brightness > 168 else "white"

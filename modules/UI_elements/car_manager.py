@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, colorchooser
 
 from ui_padding import *
 
@@ -67,6 +67,7 @@ def show_car_form(ui, editing=False, carID=None):
     ui.trim_var = tk.StringVar()
     ui.license_var = tk.StringVar()
     ui.vin_var = tk.StringVar()
+    ui.color_var = tk.StringVar(value="#FFFFFF")
     
     #* Conditional rendering
     # The editing flag is True if the user clicked the edit button to call the function
@@ -85,16 +86,17 @@ def show_car_form(ui, editing=False, carID=None):
         ui.trim_var.set(value=car["Trim"] or "")
         ui.license_var.set(value=car["LicensePlate"] or "")
         ui.vin_var.set(value=car["VINNumber"] or "")
+        ui.color_var.set(value=car["Color"] or "")
         
         submit_button = ttk.Button(ui.master, text="Submit", command=lambda carID=car["CarId"]:edit_car(ui, carID))
-        submit_button.grid(row= 7, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
+        submit_button.grid(row= 8, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
     
     else:
         title_label = ttk.Label(ui.master, text="Add a New Car", font=("Arial", 16))
         title_label.grid(row=0, column=0, columnspan=2, pady=TITLE_Y)
         
         submit_button = ttk.Button(ui.master, text="Submit", command=lambda: add_new_car(ui))
-        submit_button.grid(row= 7, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
+        submit_button.grid(row= 8, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
     
     #* Building of Shared Elements 
     year_label = ttk.Label(ui.master, text="Year:")
@@ -127,8 +129,14 @@ def show_car_form(ui, editing=False, carID=None):
     vin_entry = ttk.Entry(ui.master, textvariable=ui.vin_var)
     vin_entry.grid(row=6, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
+    ui.canvas = tk.Canvas(ui.master, width=50, height=50)
+    ui.color_rect = ui.canvas.create_rectangle(5, 5, 45, 45, fill=ui.color_var.get(), outline="black")
+    ui.canvas.grid(row=7, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
+    color_picker = tk.Button(ui.master, text="Set car color" ,command= lambda: pick_color(ui))
+    color_picker.grid(row=7, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
+    
     back_button = ttk.Button(ui.master, text="Go Back", command=lambda: show_car_manager(ui))
-    back_button.grid(row= 8, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
+    back_button.grid(row= 9, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
 
 #* Car Manager Helper
 
@@ -161,6 +169,7 @@ def add_new_car(ui):
                     ui.make_var.get(),
                     ui.model_var.get(),
                     ui.trim_var.get() or None,
+                    ui.color_var.get().upper()
                     )
     
     #* Ask about optional services
@@ -183,6 +192,7 @@ def edit_car(ui, carID):
                     ui.make_var.get(),
                     ui.model_var.get(),
                     ui.trim_var.get() or None,
+                    ui.color_var.get().upper(),
                     carID
                     )
     
@@ -225,3 +235,9 @@ def copy_text(event):
         msg = ttk.Label(root, text="Copied!")
         msg.place(x=x, y=y)
         root.after(800, msg.destroy)
+
+def pick_color(ui):
+    color_code = colorchooser.askcolor(title="Choose color", initialcolor=ui.color_var.get())[1]
+    if color_code != None:
+        ui.color_var.set(color_code)
+        ui.canvas.itemconfig(ui.color_rect, fill=ui.color_var.get())

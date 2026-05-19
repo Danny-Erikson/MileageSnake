@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS Cars (
     Year INT NOT NULL,
     Make TEXT NOT NULL,
     Model TEXT NOT NULL,
-    Trim TEXT
+    Trim TEXT,
+    Color TEXT
 );
 
 CREATE TABLE IF NOT EXISTS Mileage (
@@ -132,12 +133,12 @@ class DB:
         return [dict(row) for row in rows]
     
     #* Cars
-    def add_car(self, vin, plate, year, make, model, trim):
+    def add_car(self, vin, plate, year, make, model, trim, color):
         car_id = self.execute("""
-            INSERT INTO Cars (VINNumber, LicensePlate, Year, Make, Model, Trim)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO Cars (VINNumber, LicensePlate, Year, Make, Model, Trim, Color)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (vin, plate, year, make, model, trim)
+            (vin, plate, year, make, model, trim, color)
         )
         
         self.execute("""
@@ -156,13 +157,13 @@ class DB:
     def get_car_by_ID(self, carID):
         return self.fetchone("SELECT * FROM Cars WHERE CarId = ?", (carID,))
     
-    def update_car(self, vin, plate, year, make, model, trim, car_id):
+    def update_car(self, vin, plate, year, make, model, trim, color, car_id):
         self.execute("""
             UPDATE Cars
-            SET VINNumber = ?, LicensePlate = ?, Year = ?, Make = ?, Model = ?, Trim = ?
+            SET VINNumber = ?, LicensePlate = ?, Year = ?, Make = ?, Model = ?, Trim = ?, Color = ?
             WHERE CarId = ?
             """,
-            (vin, plate, year, make, model, trim, car_id)
+            (vin, plate, year, make, model, trim, color, car_id)
         )
     
     def remove_car(self, carID):

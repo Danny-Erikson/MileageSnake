@@ -1,5 +1,9 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
+
+import xlsxwriter
+
+from datetime import datetime, date
 
 from modules.Number_crunchers.calculate_mileage_pairs import calculate_mileage_pairs
 from modules.Number_crunchers.mileage_per_day import calculate_mileage_per_day
@@ -53,6 +57,7 @@ def on_type_change(ui):
         build_html_options(ui)
 
 def build_excel_options(ui):
+
     car_label = ttk.Label(ui.option_table, text="Car:")
     car_label.grid(row=0, column=0, sticky="e", padx=ENTRY_X, pady=ENTRY_Y)
     
@@ -61,7 +66,7 @@ def build_excel_options(ui):
     ui.car_var.set(ui.car_combo["values"][ui.car_index])
     ui.car_combo.grid(row=0, column=1, sticky="w", padx=ENTRY_X, pady=ENTRY_Y)
     
-    submit_button = ttk.Button(ui.option_table, text="Generate Report", command="")
+    submit_button = ttk.Button(ui.option_table, text="Generate Report", command=lambda:excel_export(ui))
     submit_button.grid(row=1, columnspan=2, padx=ENTRY_X, pady=ENTRY_Y)
 
 def build_html_options(ui):
@@ -100,18 +105,99 @@ def calculate_re_service_data(ui, car_id):
         if recent != None:
             services.append(recent)
     
-    data = []
+    data = [latest_mileage]
     for ser in services:
         prepped = prep_services_for_export(ser, latest_mileage, avg_miles_per_day)
         data.append(prepped)
     
     return data
 
-def excel_export(ui, car_ids):
-    pass
-    # Take a list of carids  and call calculate re data
-    # open a excel file
-    # Take list of [{car 1}}{car 2}{car 3}] and export to excel
+def excel_export(ui):
+    if ui.car_var.get() == "ALL":
+        cars = ui.cars
+    else:
+        selected_car_text = ui.car_var.get()
+        
+        cars = [
+            car for car in ui.cars
+            if f"{car['Year']} {car['Make']} {car['Model']}" == selected_car_text
+        ]
+    
+    today = date.today()
+    with xlsxwriter.Workbook(f'Reports/Services Due Report {today.strftime("%m-%d-%Y")}.xlsx') as workbook:
+        base_format = {
+            "align": "center",
+            "valign": "vcenter",
+            "font_size": 16,
+        }
+        
+        string_format = workbook.add_format(base_format)
+        
+        num_format = workbook.add_format({
+            **base_format,
+            "num_format": "#,##0",
+        })
+        
+        for car in cars:
+            row_num = 0 
+            #* Grab Data for Outside
+            data = calculate_re_service_data(ui, car["CarId"])
+            
+            title_format = workbook.add_format({
+                **base_format,
+                "border": 1,
+                "bg_color": car["Color"],
+                "font_color": ui.text_color_for_bg(car["Color"]),
+            })
+            
+            #* Crate workbook
+            worksheet = workbook.add_worksheet(car["Model"])
+            worksheet.set_column('A:F',30)
+            
+            #* Top of Table
+            worksheet.set_row(row_num, 30)
+            worksheet.merge_range('A1:F1',f'{car["Year"]} {car["Make"]} {car["Model"]} {car["Trim"] or ""}', title_format)
+            row_num += 1
+            
+            worksheet.set_row(row_num, 30)
+            worksheet.write("A2", "Latest Mileage:", string_format)
+            worksheet.write("B2", data[0]["OdometerReading"], num_format)
+            data.pop(0)
+            worksheet.write("E2", "Date of next service:", string_format)
+            row_num += 1
+            
+            worksheet.set_row(row_num, 30)
+            worksheet.write("A3", "Service", string_format)
+            worksheet.write("B3", "Mileage Done At", string_format)
+            worksheet.write("C3", "Due Every", string_format)
+            worksheet.write("D3", "Mileage Due", string_format)
+            worksheet.write("E3", "Date Due", string_format)
+            worksheet.write("F3", "Est Date of Service", string_format)
+            row_num += 1
+            
+            next_ser_date = "12/31/8008"
+            for s in data:
+                worksheet.set_row(row_num, 30)
+                worksheet.write(row_num, 0, s["Name"], string_format)
+                worksheet.write(row_num, 1, s["MileageDoneAt"], num_format)
+                worksheet.write(row_num, 2, s["DueEveryMileage"], num_format)
+                worksheet.write(row_num, 3, s["NextServiceMiles"], num_format)
+                worksheet.write(row_num, 4, s["DueDate"], string_format)
+                worksheet.write(row_num, 5, s["EstDate"], string_format)
+                row_num += 1
+                
+                date1 = datetime.strptime(next_ser_date, "%m/%d/%Y").date()
+                date2 = datetime.strptime(s["EstDate"], "%m/%d/%Y").date()
+                
+                next_ser_date = date1 if abs(date1 - today) < abs(date2 - today) else date2
+            
+            row_num += 1
+            worksheet.set_row(row_num, 30)
+            worksheet.merge_range(row_num, 0, row_num, 6,f'Date of Report: {today.strftime("%m/%d/%Y")}', string_format)
+            
+            worksheet.write('F2', next_ser_date.strftime("%m/%d/%Y") if next_ser_date != "12/31/8008" else "", string_format)
+    messagebox.showinfo("Report Ready", "Report has Been saved")
+    ui.show_reports_screen()
 
 def HTML_export(ui, car_ids):
     pass
