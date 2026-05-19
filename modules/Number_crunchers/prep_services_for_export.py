@@ -4,7 +4,6 @@ import math
 
 def prep_services_for_export(service, latest_mileage ,avg_miles_per_day):
     packed = {}
-    print(service)
     
     #* Name
     packed["Name"] = service["Name"]
