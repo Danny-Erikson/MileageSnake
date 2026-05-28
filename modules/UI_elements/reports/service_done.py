@@ -99,7 +99,7 @@ def html_export(ui):
     today = date.today()
     for car_id in cars:
         car = ui.db.get_car_by_ID(car_id)
-        with open(f'Reports/Services Due Report {car["Model"]} {today.strftime("%m-%d-%Y")}.html', "w") as doc:
+        with open(f'Reports/Services Done Report {car["Model"]} {today.strftime("%m-%d-%Y")}.html', "w") as doc:
             doc.write("""<!doctype html>
     <html>
     <head>
