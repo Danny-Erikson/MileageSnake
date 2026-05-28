@@ -189,7 +189,6 @@ def excel_export(ui):
                 'E2:F2', "Date", cell_format)
 
             data = ui.db.get_service_report_data(car_id)
-            print(data)
             col_num = 3
             for entry in data:
                 worksheet.merge_range(
