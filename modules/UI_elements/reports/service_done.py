@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import date
 
+import xlsxwriter
+
 from modules.HTML_Builders.title_card import build_title_card
 from modules.HTML_Builders.serivce_card import build_service_card
 
@@ -72,7 +74,7 @@ def build_excel_options(ui):
     build_shared_options(ui)
 
     submit_button = ttk.Button(
-        ui.option_table, text="Generate Report", command=lambda: "")
+        ui.option_table, text="Generate Report", command=lambda: excel_export(ui))
     submit_button.grid(row=1, columnspan=2, padx=ENTRY_X, pady=ENTRY_Y)
 
 
@@ -145,5 +147,58 @@ def html_export(ui):
             build_service_card(doc, ui.db.get_service_report_data(car_id))
             doc.write("""  </body>
     </html>""")
+    messagebox.showinfo("Report Ready", "Report has Been saved")
+    ui.show_reports_screen()
+
+
+def excel_export(ui):
+    if ui.car_var.get() == "ALL":
+        cars = [car["CarId"] for car in ui.cars]
+    else:
+        selected_car_text = ui.car_var.get()
+        cars = [
+            car["CarId"] for car in ui.cars
+            if f"{car['Year']} {car['Make']} {car['Model']}" == selected_car_text
+        ]
+
+    today = date.today()
+    with xlsxwriter.Workbook(f'Reports/Services Done Report {today.strftime("%m-%d-%Y")}.xlsx') as workbook:
+        cell_format = workbook.add_format({
+            "align": "center",
+            "valign": "vcenter"})
+
+        num_format = workbook.add_format({
+            "num_format": "#,##0"})
+
+        date_format = workbook.add_format({
+            "num_format": "mm/dd/yy",
+            "align": "right"})
+
+        for car_id in cars:
+            car = ui.db.get_car_by_ID(car_id)
+            # * Crate workbook
+            worksheet = workbook.add_worksheet(car["Model"])
+            worksheet.merge_range(
+                'A1:F1', f'{car["Year"]} {car["Make"]} {car["Model"]} {car["Trim"] or ""}', cell_format)
+
+            worksheet.merge_range(
+                'A2:B2', "Service", cell_format)
+            worksheet.merge_range(
+                'C2:D2', "Mileage", cell_format)
+            worksheet.merge_range(
+                'E2:F2', "Date", cell_format)
+
+            data = ui.db.get_service_report_data(car_id)
+            print(data)
+            col_num = 3
+            for entry in data:
+                worksheet.merge_range(
+                    f'A{col_num}:B{col_num}', entry["Name"])
+                worksheet.merge_range(
+                    f'C{col_num}:D{col_num}', entry["ServiceMileage"], num_format)
+                worksheet.merge_range(
+                    f'E{col_num}:F{col_num}', entry["ServiceDate"], date_format)
+                col_num += 1
+
     messagebox.showinfo("Report Ready", "Report has Been saved")
     ui.show_reports_screen()
