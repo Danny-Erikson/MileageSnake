@@ -196,6 +196,7 @@ def excel_export(ui):
                 worksheet.merge_range(
                     f'C{col_num}:D{col_num}', entry["ServiceMileage"], num_format)
                 worksheet.merge_range(
+                    # FIXME: reformat datetime
                     f'E{col_num}:F{col_num}', entry["ServiceDate"], date_format)
                 col_num += 1
 
