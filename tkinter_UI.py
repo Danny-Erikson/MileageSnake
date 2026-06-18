@@ -14,6 +14,7 @@ from modules.UI_elements.default_services_editor import show_default_services_ed
 
 from modules.UI_elements.reports.due_services import show_due_service_config
 from modules.UI_elements.reports.service_done import show_service_done_config
+from modules.UI_elements.reports.MGP_report import show_MPG_report_config
 
 
 class Service_UI:
@@ -87,7 +88,7 @@ class Service_UI:
                              pady=BUTTON_Y, sticky="ew")
 
         MPG_report_button = ttk.Button(
-            self.master, text="MPG Report", command="")
+            self.master, text="MPG Report", command=lambda: show_MPG_report_config(self))
         MPG_report_button.grid(
             row=2, column=0, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
 
@@ -169,6 +170,11 @@ class Service_UI:
         messagebox.showerror(
             "No Cars Error", "Whoops!\nLooks like there are no cars in the database, we'll reroute you to the car manager to enter one")
         show_car_manager(self)
+
+    def no_fuel_reroute(self):
+        messagebox.showerror("No Cars With Fuel",
+                             "It Looks like you you don't any cars with a Fuel Log entry\nThis screen needs Fuel enties to work, so we'll just reroute you to the report screen")
+        self.show_reports_screen()
 
     def find_car_by_id(self, car_id):
         return next((self.car for car in self.cars if car["CarId"] == car_id), None)

@@ -221,6 +221,34 @@ class DB:
         """,
                              (car_id, car_id, car_id))
 
+    def mpg_screen_cars(self):
+        return self.fetchall("""
+            SELECT *
+            FROM Cars c
+            WHERE EXISTS (
+                SELECT 1
+                FROM Mileage m
+                JOIN FuelLog f ON f.MileageId = m.MileageId
+                WHERE m.CarId = c.CarId
+            )
+        """)
+
+    def get_fuel_data(self, car_id, start_date, end_date):
+        return self.fetchall("""
+                SELECT
+                    m.OdometerReading,
+                    m.Date,
+                    f.GallonsBought,
+                    f.TotalCost,
+                    f.FullFillUp
+                FROM FuelLog f
+                JOIN Mileage m
+                    ON f.MileageId = m.MileageId
+                WHERE m.CarId = ?
+                AND m.Date BETWEEN ? AND ?
+                ORDER BY m.Date;
+            """, (car_id, start_date, end_date))
+
     # * Recurring Services
     def add_recurring_services(self, name, carID, dueMileage, intervalValue, intervalUnit, autoNote):
         self.execute("""
