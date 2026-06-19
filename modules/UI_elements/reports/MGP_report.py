@@ -18,8 +18,6 @@ def show_MPG_report_config(ui):
     ui.master.columnconfigure(1, weight=1)
 
     ui.car_var = tk.StringVar()
-    ui.type_var = tk.StringVar(value="MathPlot")
-    ui.display_var = tk.StringVar()
     ui.report_list = []
 
     # Last 6 months by default
