@@ -96,8 +96,9 @@ class DB:
 
         if is_new_db:
             self.conn.execute("""
-            INSERT INTO ServiceTemplates 
-                (Name, DueMileage, IntervalValue, IntervalUnit, IsOptional, Question)
+            INSERT INTO ServiceTemplates
+                (Name, DueMileage, IntervalValue,
+                 IntervalUnit, IsOptional, Question)
             VALUES
                 ('Oil change', 5000, 6, 'months', 0, NULL),
                 ('Eng. Intake Filter', 15000, 1, 'years', 0, NULL),
@@ -106,7 +107,8 @@ class DB:
                 ('Power Steering', 40000, 3, 'years', 0, NULL),
                 ('Transmission Fluid', 60000, NULL, NULL, 0, NULL),
                 ('Brake Fluid', 45000, 3, 'years', 0, NULL),
-                ('Rear Differential Fluid', 60000, 5, 'years', 1, 'Does the car have a rear differential');
+                ('Rear Differential Fluid', 60000, 5, 'years',
+                 1, 'Does the car have a rear differential');
             """)
 
             self.conn.commit()
@@ -195,6 +197,20 @@ class DB:
         return self.fetchone("SELECT * FROM Mileage WHERE CarId = ? AND OdometerReading = ? AND Date = ?", (carId, reading, date))
 
     def get_recent_mileage_by_car(self, car_id):
+        """
+        Get recent mileage records for a specific car.
+
+        Returns all mileage records from the last 6 months. If the car has no
+        mileage records in the last 6 months, this returns the 6 most recent
+        mileage records instead.
+
+        Args:
+            car_id (int): The ID of the car to get mileage records for.
+
+        Returns:
+            list: A list of mileage records containing OdometerReading and Date,
+                ordered from oldest to newest.
+        """
         return self.fetchall("""
             SELECT OdometerReading, Date
             FROM Mileage
@@ -220,6 +236,31 @@ class DB:
             ORDER BY Date ASC;
         """,
                              (car_id, car_id, car_id))
+
+    def get_mileage_in_date_range(self, car_id, start_date, end_date):
+        """
+    Get mileage records for a specific car within a date range.
+
+    Only mileage records with a Date between start_date and end_date,
+    including both dates, are returned.
+
+    Args:
+        car_id (int): The ID of the car to get mileage records for.
+        start_date (str): The starting date for the range, in YYYY-MM-DD format.
+        end_date (str): The ending date for the range, in YYYY-MM-DD format.
+
+    Returns:
+        list: A list of mileage records containing OdometerReading and Date,
+              ordered from oldest to newest.
+    """
+        return self.fetchall("""
+            SELECT OdometerReading, Date
+            FROM Mileage
+            WHERE CarId = ?
+            AND Date BETWEEN ? AND ?
+            ORDER BY Date ASC;
+        """,
+                             (car_id, start_date, end_date))
 
     def mpg_screen_cars(self):
         return self.fetchall("""

@@ -15,6 +15,7 @@ from modules.UI_elements.default_services_editor import show_default_services_ed
 from modules.UI_elements.reports.due_services import show_due_service_config
 from modules.UI_elements.reports.service_done import show_service_done_config
 from modules.UI_elements.reports.MGP_report import show_MPG_report_config
+from modules.UI_elements.reports.mileage_report import show_mileage_report_config
 
 
 class Service_UI:
@@ -93,7 +94,7 @@ class Service_UI:
             row=2, column=0, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
 
         mileage_report_button = ttk.Button(
-            self.master, text="Mileage Report", command="")
+            self.master, text="Mileage Report", command=lambda: show_mileage_report_config(self))
         mileage_report_button.grid(
             row=2, column=1, padx=BUTTON_X, pady=BUTTON_Y, sticky="ew")
 
