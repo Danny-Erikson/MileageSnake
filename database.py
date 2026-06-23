@@ -262,6 +262,17 @@ class DB:
         """,
                              (car_id, start_date, end_date))
 
+    def mileage_screen_cars(self):
+        return self.fetchall("""
+            SELECT *
+            FROM Cars c
+            WHERE (
+                SELECT COUNT(*)
+                FROM Mileage m
+                WHERE m.CarId = c.CarId
+            ) >= 2;
+        """)
+
     def mpg_screen_cars(self):
         return self.fetchall("""
             SELECT *
