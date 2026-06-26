@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import datetime as dt
 
-from ui_padding import *
+from modules.UI_elements.ui_padding import *
 
 # NOTE: self.cars is called at launch in tkinker_UI
 

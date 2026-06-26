@@ -7,7 +7,7 @@ import xlsxwriter
 from modules.HTML_Builders.title_card import build_title_card
 from modules.HTML_Builders.serivce_card import build_service_card
 
-from ui_padding import *
+from modules.UI_elements.ui_padding import *
 
 
 def show_service_done_config(ui):

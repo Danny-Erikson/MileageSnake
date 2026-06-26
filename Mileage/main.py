@@ -1,7 +1,7 @@
 import tkinter as tk
 
 from database import DB
-from tkinter_UI import Service_UI
+from modules.UI_elements.tkinter_UI import Service_UI
 
 
 def main():

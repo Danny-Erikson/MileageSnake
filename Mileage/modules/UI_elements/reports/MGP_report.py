@@ -1,19 +1,17 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
-
-from collections import defaultdict
-
-from modules.Number_crunchers.calculate_mileage_pairs import calculate_mileage_pairs
 
 import xlsxwriter
 
-from ui_padding import *
+from modules.Number_crunchers.calculate_MPG_data import calculate_MPG_data
+
+from modules.UI_elements.ui_padding import *
 
 
-def show_mileage_report_config(ui):
+def show_MPG_report_config(ui):
     ui.clear_frame()
 
     ui.master.columnconfigure(0, weight=1)
@@ -27,7 +25,7 @@ def show_mileage_report_config(ui):
         value=(date.today() - relativedelta(months=6)))
     ui.end_date = tk.StringVar(value=date.today())
 
-    ui.cars_with_gas = ui.db.mileage_screen_cars()
+    ui.cars_with_gas = ui.db.mpg_screen_cars()
 
     if not ui.cars_with_gas:
         ui.no_fuel_reroute()
@@ -35,7 +33,7 @@ def show_mileage_report_config(ui):
 
     title_label = tk.Label(
         ui.master,
-        text="Mileage Report",
+        text="MPG Report",
         font=("Arial", 16)
     )
     title_label.grid(row=0, column=0, columnspan=2, pady=TITLE_Y)
@@ -135,11 +133,9 @@ def validate_inputs(ui):
 
     return True
 
-# * Export
-
 
 def excel_export(ui):
-    carId = next(
+    carId = carId = next(
         (
             car["CarId"]
             for car in ui.cars
@@ -147,119 +143,71 @@ def excel_export(ui):
         ),
         None
     )
-    raw_data = calculate_mileage_pairs(ui.db.get_mileage_in_date_range(
-        carId, ui.start_date.get(), ui.end_date.get()))
 
-    monthly_miles = defaultdict(float)
-
-    for entry in raw_data:
-        end_date = datetime.strptime(entry["Date"], "%Y-%m-%d").date()
-        start_date = end_date - timedelta(days=entry["Days"] - 1)
-
-        miles_per_day = entry["Miles"] / entry["Days"]
-
-        current_date = start_date
-
-        while current_date <= end_date:
-            month_key = current_date.strftime("%Y-%m")
-            monthly_miles[month_key] += miles_per_day
-            current_date += timedelta(days=1)
-
-    monthly_miles = {
-        month: round(miles)
-        for month, miles in monthly_miles.items()
-    }
-
-    month_data = [
-        {
-            "Month": month,
-            "Miles": miles
-        }
-        for month, miles in sorted(monthly_miles.items())
-    ]
+    data = calculate_MPG_data(
+        ui.db.get_fuel_data(carId, ui.start_date.get(), ui.end_date.get()))
 
     today = date.today()
-    with xlsxwriter.Workbook(f'Reports/Mileage Report {today.strftime("%m-%d-%Y")}.xlsx') as workbook:
+    with xlsxwriter.Workbook(f'Reports/MPG Report {today.strftime("%m-%d-%Y")}.xlsx') as workbook:
         cell_format = workbook.add_format({
             "align": "center",
             "valign": "vcenter"})
 
         car = ui.db.get_car_by_ID(1)
-        # * Month Data
-        month_wb = workbook.add_worksheet("Month")
-
-        month_wb.set_column('A:D', 12)
-        month_wb.merge_range(
+        # * Crate workbook
+        worksheet = workbook.add_worksheet(car["Model"])
+        worksheet.set_column('A:D', 12)
+        worksheet.merge_range(
             'A1:D1', f'{car["Year"]} {car["Make"]} {car["Model"]} {car["Trim"] or ""}', cell_format)
-        month_wb.write('B2', 'Miles Driven', cell_format)
-        month_wb.write('C2', 'Month', cell_format)
+        worksheet.write('A2', 'MPG', cell_format)
+        worksheet.write('B2', 'Fuel Price', cell_format)
+        worksheet.write('C2', 'Cost per Mile', cell_format)
+        worksheet.write('D2', 'Date', cell_format)
 
         row_num = 3
-        for entry in month_data:
-            month_wb.write(f'B{row_num}', entry["Miles"], cell_format)
-            month_wb.write(f'C{row_num}', entry["Month"], cell_format)
+        for entry in data:
+            worksheet.write(f'A{row_num}', entry["MPG"], cell_format)
+            worksheet.write(f'B{row_num}', entry["CPG"], cell_format)
+            worksheet.write(f'C{row_num}', entry["CPM"], cell_format)
+            worksheet.write(f'D{row_num}', entry["Date"], cell_format)
             row_num += 1
 
-        # * Raw Data
-        raw_wb = workbook.add_worksheet("Raw")
-        raw_wb.set_column('A:D', 12)
-        raw_wb.merge_range(
-            'A1:D1', f'{car["Year"]} {car["Make"]} {car["Model"]} {car["Trim"] or ""}', cell_format)
-        raw_wb.write('B2', 'Miles Driven', cell_format)
-        raw_wb.write('C2', 'Month', cell_format)
+        mpg_chart = workbook.add_chart({"type": "line"})
 
-        row_num = 3
-        for entry in raw_data:
-            raw_wb.write(f'B{row_num}', entry["Miles"], cell_format)
-            raw_wb.write(f'C{row_num}', entry["Date"], cell_format)
-            row_num += 1
-
-        raw_chart = workbook.add_chart({"type": "line"})
-
-        raw_chart.add_series({
-            "name": "Raw Data",
-            "categories": f"='Raw'!$C$3:$C${row_num}",
-            "values": f"='Raw'!$B$3:$B${row_num}",
+        mpg_chart.add_series({
+            "name": "Mile Per Gallon",
+            "categories": f"={car["Model"]}!$D$3:$D${row_num}",
+            "values": f"={car["Model"]}!$A$3:$A${row_num}",
             "data_labels": {
                 "value": True,
             },
         })
 
-        month_chart = workbook.add_chart({"type": "column"})
+        cpg_chart = workbook.add_chart({"type": "line"})
 
-        month_chart.add_series({
-            "name": "Month Data",
-            "categories": f"='Month'!$C$3:$C${row_num}",
-            "values": f"='Month'!$B$3:$B${row_num}",
+        cpg_chart.add_series({
+            "name": "Gas Prices",
+            "categories": f"={car["Model"]}!$D$3:$D${row_num}",
+            "values": f"={car["Model"]}!$B$3:$B${row_num}",
             "data_labels": {
                 "value": True,
             },
         })
 
-        month_wb.insert_chart("F3", raw_chart)
-        month_wb.insert_chart("F21", month_chart)
+        cpm_chart = workbook.add_chart({"type": "line"})
 
-        raw_chart = workbook.add_chart({"type": "line"})
-
-        raw_chart.add_series({
-            "name": "Raw Data",
-            "categories": f"='Raw'!$C$3:$C${row_num}",
-            "values": f"='Raw'!$B$3:$B${row_num}",
-        })
-
-        month_chart = workbook.add_chart({"type": "column"})
-
-        month_chart.add_series({
-            "name": "Month Data",
-            "categories": f"='Month'!$C$3:$C${row_num}",
-            "values": f"='Month'!$B$3:$B${row_num}",
+        cpm_chart.add_series({
+            "name": "Cost Per Mile",
+            "categories": f"={car["Model"]}!$D$3:$D${row_num}",
+            "values": f"={car["Model"]}!$C$3:$C${row_num}",
             "data_labels": {
                 "value": True,
             },
         })
 
-        raw_wb.insert_chart("F3", raw_chart)
-        raw_wb.insert_chart("F21", month_chart)
+        worksheet.insert_chart("F3", mpg_chart)
+        worksheet.insert_chart("F21", cpg_chart)
+        worksheet.insert_chart("F39", cpm_chart)
 
     messagebox.showinfo("Report Ready", "Report has Been saved")
     ui.show_reports_screen()

@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox
 
 import datetime as dt
 
-from ui_padding import *
+from modules.UI_elements.ui_padding import *
 
 # * Module Imports
 from modules.UI_elements.mileage_screen import show_mileage_screen
