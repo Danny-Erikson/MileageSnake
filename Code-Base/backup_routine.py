@@ -4,7 +4,8 @@ import hashlib
 import sqlite3
 
 
-DB_PATH = Path("Data/Cars.db")
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "Data" / "Cars.db"
 BACKUP_DIR = Path("Backups")
 HASH_FILE = BACKUP_DIR / "last_hash.txt"
 
