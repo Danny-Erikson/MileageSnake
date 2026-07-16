@@ -318,8 +318,17 @@ class DB:
         SELECT *
         FROM RecurringServices
         WHERE CarId = ?
-        ORDER BY 
-        DueMileage ASC;"""),
+        ORDER BY
+            CASE
+                WHEN DueMileage IS NOT NULL THEN 0
+                ELSE 1
+            END,
+            DueMileage,
+            CASE IntervalUnit
+                WHEN 'days' THEN IntervalValue
+                WHEN 'months' THEN IntervalValue * 30
+                WHEN 'years' THEN IntervalValue * 365
+            END;"""),
                              (carID,)
                              )
 

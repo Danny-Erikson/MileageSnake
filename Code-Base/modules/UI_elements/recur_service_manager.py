@@ -69,10 +69,9 @@ def on_car_change(ui):
 
     # * Grab Data
     ui.car_index = ui.car_combo.current()
+
     services = ui.db.get_recurring_services_by_carID(
         ui.cars[ui.car_index]["CarId"])
-
-    day_sort(services, find_days_only(services))
 
     # * Build Table
     row_count = 1
@@ -234,6 +233,11 @@ def add_service(ui):
         sanitized_inputs = (
             *safe_inputs, ui.time_value_var.get(), ui.time_unit_var.get())
 
+    if ui.note_var.get() == "":
+        sanitized_inputs = (*sanitized_inputs, None)
+    else:
+        sanitized_inputs = (*sanitized_inputs, ui.note_var.get())
+
     ui.db.add_recurring_services(*sanitized_inputs)
     show_recur_service_manager(ui)
 
@@ -263,49 +267,6 @@ def remove_service(ui, serviceID):
     if confirmed:
         ui.db.remove_recurring_service(serviceID)
         on_car_change(ui)
-
-
-def find_days_only(service):
-    days = [s for s in service if s["DueMileage"] is None]
-    service[:] = [s for s in service if s["DueMileage"] is not None]
-    return days
-
-
-def day_sort(service, split):
-    # Take this a future todo but at some point it pipe in the cars AVG Miles per day to this
-    # It would be closer to the intend of this sort which is to sort the services based on frequency
-    # we could probably do this with a cached MPD and convert DueDays to miles and compare that way
-    # FIXME: day sort is kinda broken 3 years did not fall into place
-    while split != []:
-        i = 0
-        found = False
-        match split[0]["IntervalUnit"]:
-            case "days":
-                i_days = split[0]["IntervalValue"]
-            case "months":
-                i_days = int(split[0]["IntervalValue"]) * 30
-            case "years":
-                i_days = int(split[0]["IntervalValue"]) * 365
-
-        while not found:
-            next_service = service[i+1]
-
-            match next_service["IntervalUnit"]:
-                case None:
-                    c_days = 0
-                case "days":
-                    c_days = next_service["IntervalValue"]
-                case "months":
-                    c_days = int(next_service["IntervalValue"]) * 30
-                case "years":
-                    c_days = int(next_service["IntervalValue"]) * 365
-
-            if i_days >= c_days:
-                i += 1
-            else:
-                service.insert(i, split[0])
-                split.pop(0)
-                found = True
 
 
 def day_formatter(value, unit):
