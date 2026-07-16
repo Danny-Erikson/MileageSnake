@@ -93,6 +93,7 @@ def show_mileage_screen(ui):
                              command=ui._show_main_screen)
     back_button.grid(row=9, columnspan=2, padx=BUTTON_X, pady=BUTTON_Y)
 
+
 # * Mileage Helper
 
 
@@ -162,6 +163,10 @@ def validate_inputs(ui):
             messagebox.showerror(
                 "Input Error", "Gallons bought can not be blank")
             return False
-        # TODO: Add First Fill up is to full check
+
+        if (ui.full_up_var.get() == False) and (not any(car["CarId"] == ui.cars[ui.car_combo.current()]["CarId"] for car in ui.db.mpg_screen_cars())):
+            messagebox.showerror(
+                "Input Error", "Your first fuel entry must be a full fill-up to ensure accurate fuel economy calculations.")
+            return False
 
     return True
