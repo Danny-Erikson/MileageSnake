@@ -23,8 +23,10 @@ def show_car_manager(ui):
 
     car_label = tk.Label(ui.master, text="Car")
     car_label.grid(row=1, column=1, sticky="ew")
+
     license_label = tk.Label(ui.master, text="License plate")
     license_label.grid(row=1, column=2, sticky="ew")
+
     vin_label = tk.Label(ui.master, text="VIN Number")
     vin_label.grid(row=1, column=3, sticky="ew")
 
@@ -40,15 +42,19 @@ def show_car_manager(ui):
             ui.master, text=f"{car["Year"]} {car["Make"]} {car["Model"]} {car["Trim"] or ""}")
         car_name.bind("<Button-1>", copy_text)
         car_name.grid(row=row_count, column=1, sticky="ew")
+
         car_vin = tk.Label(ui.master, text=car["LicensePlate"])
         car_vin.bind("<Button-1>", copy_text)
         car_vin.grid(row=row_count, column=2, sticky="ew")
+
         car_license = tk.Label(ui.master, text=car["VINNumber"])
         car_license.bind("<Button-1>", copy_text)
         car_license.grid(row=row_count, column=3, sticky="ew")
+
         remove_car_button = tk.Button(
             ui.master, text="Remove Car", command=lambda carID=car["CarId"]: remove_car(ui, carID=carID))
         remove_car_button.grid(row=row_count, column=4, sticky="ew")
+
         row_count += 1
 
     # * Below the table elements
@@ -56,12 +62,15 @@ def show_car_manager(ui):
         ui.master, text="Click on car values to copy to clipboard")
     copy_inst.grid(row=row_count + 1, column=0, columnspan=5,
                    padx=BUTTON_X, pady=BUTTON_Y)
+
     add_new = tk.Button(ui.master, text="Add New Car",
                         command=lambda: show_car_form(ui))
     add_new.grid(row=row_count + 2, column=0, columnspan=5,
                  padx=BUTTON_X, pady=BUTTON_Y)
+
     go_back = tk.Button(ui.master, text="Go Back",
                         command=ui.show_advanced_area)
+
     go_back.grid(row=row_count + 3, column=0, columnspan=5,
                  padx=BUTTON_X, pady=BUTTON_Y)
 
